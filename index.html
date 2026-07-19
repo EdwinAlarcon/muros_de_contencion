@@ -2,1187 +2,2011 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Muro de Contención — Análisis Interactivo</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<title>Dashboard Geotécnico | Muros de Contención v3.3</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root{
-    --paper:#EEF2F6;
-    --paper-deep:#E3E9F0;
-    --grid-line:#C7D6E4;
-    --ink:#0F2A44;
-    --ink-soft:#4C6478;
-    --blue:#1D5C9E;
-    --blue-deep:#12406F;
-    --amber:#E1962A;
-    --amber-deep:#B9740F;
-    --green:#1E7D4F;
-    --green-bg:#E4F5EC;
-    --red:#B5342A;
-    --red-bg:#FBE8E5;
-    --card:#FFFFFF;
-    --line:#D3DEE8;
-    --display:'Space Grotesk', sans-serif;
-    --body:'IBM Plex Sans', sans-serif;
-    --mono:'IBM Plex Mono', monospace;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    font-family:var(--body);
-    color:var(--ink);
-    background-color:var(--paper);
-    background-image:
-      linear-gradient(var(--grid-line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-    background-size:28px 28px;
-    min-height:100vh;
-  }
-  ::selection{background:var(--amber); color:#1a1200;}
-
-  /* ---------- Topbar ---------- */
-  .topbar{
-    display:flex; align-items:flex-end; justify-content:space-between;
-    gap:24px; flex-wrap:wrap;
-    padding:28px clamp(16px,4vw,48px) 18px;
-    border-bottom:2px solid var(--ink);
-    background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0));
-  }
-  .brand-eyebrow{
-    font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
-    color:var(--blue-deep); margin:0 0 6px;
-  }
-  .brand-title{
-    font-family:var(--display); font-weight:700; font-size:clamp(24px,3vw,34px);
-    margin:0; line-height:1.05;
-  }
-  .brand-sub{margin:6px 0 0; color:var(--ink-soft); font-size:13.5px; max-width:56ch;}
-  .topbar-actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
-  .method-toggle{
-    display:flex; border:1.5px solid var(--ink); border-radius:8px; overflow:hidden;
-    font-family:var(--mono); font-size:12.5px;
-  }
-  .method-toggle button{
-    border:none; background:var(--card); color:var(--ink-soft); padding:9px 16px;
-    cursor:pointer; font-family:inherit; font-size:inherit; letter-spacing:.03em;
-  }
-  .method-toggle button + button{border-left:1.5px solid var(--ink);}
-  .method-toggle button.active{background:var(--ink); color:#fff;}
-  .btn{
-    font-family:var(--mono); font-size:12.5px; letter-spacing:.03em;
-    padding:9px 14px; border-radius:8px; border:1.5px solid var(--ink);
-    background:var(--card); color:var(--ink); cursor:pointer;
-  }
-  .btn:hover{background:var(--ink); color:#fff;}
-  .btn.accent{background:var(--amber); border-color:var(--amber-deep); color:#241900;}
-  .btn.accent:hover{background:var(--amber-deep); color:#fff;}
-
-  /* ---------- Layout ---------- */
-  .layout{display:grid; grid-template-columns:320px 1fr; gap:22px; padding:22px clamp(16px,4vw,48px) 60px; align-items:start;}
-  @media (max-width:920px){ .layout{grid-template-columns:1fr;} }
-
-  /* ---------- Inputs panel ---------- */
-  .panel-inputs{
-    position:sticky; top:22px;
-    background:var(--card); border:1.5px solid var(--ink); border-radius:12px;
-    padding:6px 16px 16px; max-height:calc(100vh - 44px); overflow-y:auto;
-  }
-  .panel-inputs h2{
-    font-family:var(--display); font-size:15px; margin:16px 0 2px; letter-spacing:.01em;
-  }
-  fieldset{border:none; margin:0 0 4px; padding:10px 0 4px; border-top:1px dashed var(--line);}
-  fieldset:first-of-type{border-top:none;}
-  legend{
-    font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.14em;
-    color:var(--blue-deep); padding:0; margin-bottom:6px;
-  }
-  .field{display:grid; grid-template-columns:1fr 92px; align-items:center; gap:8px; margin:6px 0;}
-  .field label{font-size:12.3px; color:var(--ink-soft); line-height:1.25;}
-  .field input, .field select{
-    font-family:var(--mono); font-size:12.5px; padding:5px 6px; border-radius:6px;
-    border:1.3px solid var(--line); background:var(--paper); color:var(--ink); text-align:right;
-    width:100%;
-  }
-  .field select{text-align:left;}
-  .field input:focus, .field select:focus{outline:2px solid var(--blue); border-color:var(--blue); background:#fff;}
-  .unit-hint{font-family:var(--mono); font-size:9.5px; color:var(--ink-soft); opacity:.75; grid-column:2; text-align:right; margin-top:-4px;}
-
-  /* ---------- Content cards ---------- */
-  .card{
-    background:var(--card); border:1.5px solid var(--ink); border-radius:12px;
-    padding:20px clamp(14px,2.4vw,28px); margin-bottom:22px;
-  }
-  .card h3{
-    font-family:var(--display); font-size:19px; margin:0 0 4px; display:flex; align-items:baseline; gap:10px;
-  }
-  .card h3 .tag{
-    font-family:var(--mono); font-size:11px; color:#fff; background:var(--blue); padding:2px 8px; border-radius:5px; letter-spacing:.06em;
-  }
-  .card p.desc{color:var(--ink-soft); font-size:13px; margin:0 0 16px; max-width:70ch;}
-
-  /* ---------- Signature drawing ---------- */
-  .drawing-wrap{display:grid; grid-template-columns:1fr 230px; gap:18px;}
-  @media (max-width:700px){ .drawing-wrap{grid-template-columns:1fr;} }
-  .drawing-frame{
-    border:1.5px solid var(--ink); border-radius:8px; background:
-      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(29,92,158,.06) 27px, rgba(29,92,158,.06) 28px),
-      repeating-linear-gradient(90deg, transparent, transparent 27px, rgba(29,92,158,.06) 27px, rgba(29,92,158,.06) 28px),
-      #F7FAFD;
-  }
-  .title-block{
-    border:1.5px solid var(--ink); border-radius:8px; padding:12px 14px; font-family:var(--mono); font-size:11.5px;
-    background:repeating-linear-gradient(135deg, #fff, #fff 10px, #FBF6EC 10px, #FBF6EC 11px);
-  }
-  .title-block dt{color:var(--ink-soft); margin-top:8px; text-transform:uppercase; font-size:9.5px; letter-spacing:.1em;}
-  .title-block dt:first-child{margin-top:0;}
-  .title-block dd{margin:1px 0 0; font-weight:600; color:var(--ink);}
-
-  /* ---------- Stability tables ---------- */
-  .stability-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
-  @media (max-width:760px){ .stability-grid{grid-template-columns:1fr;} }
-  .stab-col h4{font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-soft); margin:0 0 10px;}
-  table.checks{width:100%; border-collapse:collapse; font-size:13px;}
-  table.checks th{
-    font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);
-    text-align:left; padding:6px 8px; border-bottom:1.5px solid var(--ink);
-  }
-  table.checks td{padding:8px; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:12.8px;}
-  table.checks tr td:first-child{font-family:var(--body); font-size:13px;}
-  .status{display:inline-flex; align-items:center; gap:5px; padding:2px 9px; border-radius:20px; font-size:11px; font-family:var(--mono); font-weight:600;}
-  .status.ok{background:var(--green-bg); color:var(--green);}
-  .status.bad{background:var(--red-bg); color:var(--red);}
-  .status.na{background:#EEE; color:#888;}
-
-  /* ---------- Pressure section ---------- */
-  .pressure-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:20px;}
-  @media (max-width:760px){ .pressure-grid{grid-template-columns:1fr;} }
-  .pressure-figures{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  .fig{border:1.3px solid var(--line); border-radius:8px; padding:10px 12px;}
-  .fig .k{font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft);}
-  .fig .v{font-family:var(--mono); font-size:19px; font-weight:600; margin-top:2px;}
-  .fig .v.small{font-size:14px;}
-
-  /* ---------- Reinforcement ---------- */
-  .rebar-group{margin-bottom:22px;}
-  .rebar-group > h4{
-    font-family:var(--display); font-size:15px; margin:0 0 10px; padding-bottom:6px; border-bottom:1.5px solid var(--ink);
-    display:flex; align-items:center; gap:8px;
-  }
-  .rebar-group > h4 .idx{font-family:var(--mono); font-size:12px; color:var(--blue); background:#E7F0FA; padding:1px 7px; border-radius:5px;}
-  .rebar-cards{display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:14px;}
-  .rebar-card{border:1.3px solid var(--line); border-radius:10px; padding:13px 14px;}
-  .rebar-card.seismic{background:#FFFBF2; border-color:#EBD9B0;}
-  .rebar-card .rc-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
-  .rebar-card .rc-title{font-size:12.6px; font-weight:600;}
-  .rebar-card .rc-case{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft);}
-  .rc-metrics{display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; font-family:var(--mono); font-size:11.6px; margin-bottom:8px;}
-  .rc-metrics div span{display:block; color:var(--ink-soft); font-size:9.5px; text-transform:uppercase; letter-spacing:.05em;}
-  .rc-bars{font-family:var(--mono); font-size:12px; background:var(--paper-deep); border-radius:6px; padding:6px 8px; margin-top:2px;}
-  .rc-warn{font-size:11.5px; color:var(--red); font-weight:600; margin-top:6px;}
-
-  footer.note{
-    font-family:var(--mono); font-size:11px; color:var(--ink-soft); text-align:center; padding:0 20px 40px;
-  }
-  a{color:var(--blue);}
-
-  /* ---------- Internal-force diagrams ---------- */
-  .diagram-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
-  @media (max-width:900px){ .diagram-grid{grid-template-columns:1fr;} }
-  .diagram-box h4{font-family:var(--mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); margin:0 0 8px;}
-  .diagram-legend{font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); margin-top:6px;}
-  .diagram-legend span{display:inline-flex; align-items:center; gap:5px; margin-right:14px;}
-  .swatch{width:14px; height:3px; display:inline-block; border-radius:2px;}
-
-  /* ---------- Export / cajetín ---------- */
-  .export-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; margin-bottom:16px;}
-  @media (max-width:640px){ .export-grid{grid-template-columns:1fr;} }
-  .export-field{display:flex; flex-direction:column; gap:4px;}
-  .export-field label{font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft);}
-  .export-field input{
-    font-family:var(--body); font-size:13px; padding:7px 9px; border-radius:6px;
-    border:1.3px solid var(--line); background:var(--paper);
-  }
-  .export-actions{display:flex; gap:10px; flex-wrap:wrap;}
-
-  @media print{
-    body{background:#fff !important;}
-    .topbar-actions, .panel-inputs, footer.note, .export-actions, #methodToggle{display:none !important;}
-    .layout{grid-template-columns:1fr !important; padding:0 18px;}
-    .card{break-inside:avoid; border:1px solid #000; margin-bottom:14px;}
-    .topbar{border-bottom:2px solid #000;}
-    #printTitleBlock{display:block !important;}
-  }
-  #printTitleBlock{display:none; border:1.6px solid #000; border-radius:0; padding:14px 18px; margin:0 clamp(16px,4vw,48px) 0; font-family:var(--mono); font-size:12px;}
-  #printTitleBlock table{width:100%; border-collapse:collapse;}
-  #printTitleBlock td{padding:3px 6px;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+:root{--bg:#0a0e1a;--panel:rgba(20,25,40,0.75);--border:rgba(100,150,255,0.15);--accent:#00d4ff;--accent2:#7c3aed;--ok:#10b981;--fail:#ef4444;--warn:#f59e0b;--text:#e5e7eb;--muted:#94a3b8;--rankine:#00d4ff;--coulomb:#f59e0b}
+body{background:var(--bg);color:var(--text);overflow:hidden;height:100vh;background-image:radial-gradient(at 20% 20%,rgba(124,58,237,0.15) 0,transparent 50%),radial-gradient(at 80% 80%,rgba(0,212,255,0.12) 0,transparent 50%)}
+.dashboard{display:grid;grid-template-columns:300px 1fr;grid-template-rows:56px 1fr;height:100vh;gap:6px;padding:6px}
+header{grid-column:1/-1;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.status{display:flex;gap:14px;align-items:center;font-size:12px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.sidebar{background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:14px;padding:12px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.sidebar::-webkit-scrollbar{width:5px}.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.sidebar h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin:10px 0 6px;display:flex;align-items:center;gap:5px}
+.sidebar h3::before{content:'';width:3px;height:12px;background:var(--accent);border-radius:2px}
+.field{margin-bottom:5px}
+.field label{display:block;font-size:10px;color:var(--muted);margin-bottom:2px;font-weight:500}
+.field input,.field select{width:100%;padding:5px 8px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;transition:all 0.2s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,212,255,0.15)}
+.btn{width:100%;padding:7px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:500;cursor:pointer;margin-top:5px;transition:all 0.2s;font-size:11px}
+.btn:hover{background:rgba(0,212,255,0.1);border-color:var(--accent)}
+.btn-export{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;font-weight:700;border:none}
+.btn-export:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,212,255,0.3)}
+.main{background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.tabs{display:flex;gap:3px;padding:8px 12px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.2);flex-wrap:wrap}
+.tab{padding:6px 12px;background:transparent;border:none;color:var(--muted);cursor:pointer;border-radius:7px;font-size:11px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;gap:5px}
+.tab:hover{color:var(--text);background:rgba(255,255,255,0.05)}
+.tab.active{background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(124,58,237,0.2));color:var(--accent);box-shadow:inset 0 0 0 1px var(--border)}
+.content{flex:1;overflow-y:auto;padding:12px}
+.content::-webkit-scrollbar{width:6px}.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.panel{display:none;animation:fadeIn 0.25s}.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:10px;padding:12px;transition:all 0.2s}
+.card:hover{border-color:var(--accent)}
+.card-title{font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px}
+.badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;text-transform:uppercase}
+.badge.ok{background:rgba(16,185,129,0.15);color:var(--ok);border:1px solid rgba(16,185,129,0.3)}
+.badge.fail{background:rgba(239,68,68,0.15);color:var(--fail);border:1px solid rgba(239,68,68,0.3)}
+.badge.rankine{background:rgba(0,212,255,0.15);color:var(--rankine);border:1px solid rgba(0,212,255,0.3)}
+.badge.coulomb{background:rgba(245,158,11,0.15);color:var(--coulomb);border:1px solid rgba(245,158,11,0.3)}
+.chart-box{background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;position:relative;min-height:240px}
+.chart-box h4{font-size:11px;color:var(--accent);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.chart-box .chart-container{position:relative;height:220px;width:100%}
+.chart-box canvas{max-height:220px!important}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{background:rgba(0,212,255,0.08);color:var(--accent);padding:6px 8px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.5px}
+td{padding:5px 8px;border-bottom:1px solid var(--border)}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.section-title{font-size:13px;font-weight:700;margin:12px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border);color:var(--accent);display:flex;align-items:center;gap:7px}
+.section-title::before{content:'';width:3px;height:14px;background:linear-gradient(var(--accent),var(--accent2));border-radius:2px}
+.method-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;font-weight:700}
+.method-header.rankine{color:var(--rankine)}.method-header.coulomb{color:var(--coulomb)}
+.info-row{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px dashed rgba(100,150,255,0.1)}
+.info-row span:first-child{color:var(--muted)}.info-row span:last-child{font-weight:600;color:var(--text)}
+.fem-canvas{width:100%;height:320px;background:rgba(0,0,0,0.4);border-radius:8px;border:1px solid var(--border);display:block}
+.struct-card{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:6px}
+.struct-card .case-title{font-size:10px;color:var(--accent);margin-bottom:3px;font-weight:600;text-transform:uppercase}
+.legend-color{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.legend-rankine{background:var(--rankine)}.legend-coulomb{background:var(--coulomb)}
+.memory-container{background:#0d1117;border:1px solid var(--border);border-radius:10px;padding:20px;color:#e5e7eb;line-height:1.6}
+.memory-header{text-align:center;padding:20px;background:linear-gradient(135deg,rgba(0,212,255,0.1),rgba(124,58,237,0.1));border-radius:8px;margin-bottom:20px;border:1px solid var(--border)}
+.memory-header h1{font-size:20px;color:var(--accent);margin-bottom:6px}
+.memory-header h2{font-size:13px;color:var(--muted);font-weight:400}
+.memory-header .meta{font-size:11px;color:var(--muted);margin-top:8px}
+.mem-section{margin-bottom:18px;padding:14px;background:rgba(0,0,0,0.3);border-radius:8px;border-left:3px solid var(--accent)}
+.mem-section h3{color:var(--accent);font-size:14px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px dashed var(--border)}
+.mem-subsection{margin:10px 0;padding:10px;background:rgba(0,212,255,0.04);border-radius:6px;border:1px solid rgba(100,150,255,0.1)}
+.mem-subsection h4{color:var(--accent2);font-size:12px;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.mem-concept{font-size:11px;color:var(--muted);margin-bottom:8px;font-style:italic;padding-left:8px;border-left:2px solid var(--accent2)}
+.mem-formula{background:rgba(0,0,0,0.5);padding:8px 12px;border-radius:6px;font-family:'Consolas',monospace;font-size:12px;color:#fbbf24;margin:6px 0;border:1px solid rgba(251,191,36,0.2);overflow-x:auto;white-space:pre-wrap}
+.mem-substitution{background:rgba(16,185,129,0.08);padding:8px 12px;border-radius:6px;font-family:'Consolas',monospace;font-size:12px;color:var(--ok);margin:6px 0;border-left:3px solid var(--ok);overflow-x:auto;white-space:pre-wrap}
+.mem-result{background:rgba(124,58,237,0.1);padding:8px 12px;border-radius:6px;font-family:'Consolas',monospace;font-size:12px;color:#c4b5fd;margin:6px 0;border-left:3px solid var(--accent2);font-weight:700}
+.mem-result.ok{background:rgba(16,185,129,0.12);color:var(--ok);border-left-color:var(--ok)}
+.mem-result.fail{background:rgba(239,68,68,0.12);color:var(--fail);border-left-color:var(--fail)}
+.mem-table{width:100%;border-collapse:collapse;margin:8px 0;font-size:11px}
+.mem-table th{background:rgba(0,212,255,0.12);color:var(--accent);padding:5px 8px;text-align:left;font-size:10px;text-transform:uppercase}
+.mem-table td{padding:4px 8px;border-bottom:1px solid rgba(100,150,255,0.1)}
+.mem-figure{margin:14px 0;padding:12px;background:#fff;color:#1f2937;border-radius:8px;border:1px solid #cbd5e1;break-inside:avoid;page-break-inside:avoid}
+.mem-figure h5{color:#0f766e;font-size:13px;margin:0 0 5px}.mem-figure p{color:#475569;font-size:11px;margin:5px 0 8px;font-style:normal}.mem-figure svg{display:block;width:100%;height:auto;max-height:390px}.mem-figure .fig-note{font-size:10px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:6px;margin-top:5px}
+.mem-table tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+.mem-note{font-size:10px;color:var(--muted);padding:6px 10px;background:rgba(245,158,11,0.08);border-radius:4px;margin:6px 0;border-left:2px solid var(--warn)}
+.mem-toc{background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;margin-bottom:16px}
+.mem-toc h4{color:var(--accent);margin-bottom:8px;font-size:12px}
+.mem-toc ol{padding-left:20px;font-size:11px}
+.mem-toc li{padding:2px 0;color:var(--text)}
+.mem-toc a{color:var(--accent);text-decoration:none}
+.mem-toc a:hover{text-decoration:underline}
+.export-bar{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(124,58,237,0.15));padding:10px 14px;border-radius:10px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(10px);border:1px solid var(--border)}
+.export-bar .info{font-size:11px;color:var(--muted)}
+.export-bar .info strong{color:var(--accent)}
+.mem-caso{background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:6px;padding:10px;margin:8px 0}
+.mem-caso-title{color:var(--accent);font-weight:700;font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:4px;border-bottom:1px dashed var(--border)}
 </style>
 </head>
 <body>
+<div class="dashboard">
+<header>
+  <div class="logo"><div class="logo-icon">🏗️</div>Análisis Geotécnico — Rankine & Coulomb</div>
+  <div class="status"><span class="status-dot"></span><span id="statusText">Inicializando...</span><span style="color:var(--muted)">| v3.3</span></div>
+</header>
 
-<div id="printTitleBlock">
-  <table>
-    <tr>
-      <td style="width:20%; color:#555;">PROYECTO</td><td style="width:30%; font-weight:600;" id="pbProyecto">—</td>
-      <td style="width:20%; color:#555;">FECHA</td><td style="width:30%; font-weight:600;" id="pbFecha">—</td>
-    </tr>
-    <tr>
-      <td style="color:#555;">UBICACIÓN</td><td id="pbUbicacion">—</td>
-      <td style="color:#555;">MÉTODO</td><td id="pbMetodo">—</td>
-    </tr>
-    <tr>
-      <td style="color:#555;">ELABORADO POR</td><td id="pbElaborado">—</td>
-      <td style="color:#555;">REVISADO POR</td><td id="pbRevisado">—</td>
-    </tr>
-  </table>
-</div>
+<aside class="sidebar">
+  <h3>📐 Geometría</h3>
+  <div class="field"><label>Altura pantalla H₂ (m)</label><input type="number" data-k="H2" value="6.0" step="0.1"></div>
+  <div class="field"><label>Altura zapata H₃ (m)</label><input type="number" data-k="H3" value="0.7" step="0.1"></div>
+  <div class="field"><label>Prof. cimentación D (m)</label><input type="number" data-k="D" value="1.5" step="0.1"></div>
+  <div class="field"><label>Espesor base t_b (m)</label><input type="number" data-k="t_b" value="0.7" step="0.05"></div>
+  <div class="field"><label>Espesor corona t_c (m)</label><input type="number" data-k="t_c" value="0.5" step="0.05"></div>
+  <div class="field"><label>Proyección pie p_p (m)</label><input type="number" data-k="p_p" value="0.7" step="0.1"></div>
+  <div class="field"><label>Proyección talón p_t (m)</label><input type="number" data-k="p_t" value="2.6" step="0.1"></div>
+  <div class="field"><label>Cara vertical</label><select data-k="cara_vertical"><option value="interior">Interior</option><option value="exterior">Exterior</option></select></div>
 
-<div class="app">
-  <header class="topbar">
-    <div>
-      <p class="brand-eyebrow">Análisis geotécnico &amp; diseño estructural — E.060 / AASHTO</p>
-      <h1 class="brand-title">Muro de Contención</h1>
-      <p class="brand-sub">Estabilidad, presión de contacto y refuerzo de pantalla/zapata, recalculados en vivo con cada cambio de dato.</p>
-    </div>
-    <div class="topbar-actions">
-      <div class="method-toggle" id="methodToggle">
-        <button data-method="rankine" class="active">Rankine</button>
-        <button data-method="coulomb">Coulomb</button>
-      </div>
-      <button class="btn accent" id="btnDefaults">Cargar valores por defecto</button>
-    </div>
-  </header>
+  <h3>🌍 Terreno</h3>
+  <div class="field"><label>Inclinación Ai (°)</label><input type="number" data-k="Ai" value="10" step="1"></div>
+  <div class="field"><label>Altura adicional H₁ (m) — calculada</label><input type="number" id="H1_calc" value="0" step="0.1" readonly style="opacity:0.75;cursor:not-allowed" title="H1 = tan(Ai) × (p_t + (t_b - t_c)), depende de la inclinación y de la geometría del talón/tallo"></div>
+  <div class="field"><label>Dentellón D₂ (m)</label><input type="number" data-k="D2" value="0" step="0.1"></div>
+  <div class="field"><label>γ relleno P₁ (kg/m³)</label><input type="number" data-k="P1" value="1800" step="50"></div>
+  <div class="field"><label>φ relleno Af₁ (°)</label><input type="number" data-k="Af1" value="30" step="1"></div>
+  <div class="field"><label>Cohesión C₁ (kg/m²)</label><input type="number" data-k="C1" value="0" step="10"></div>
+  <div class="field"><label>γ ciment. P₂ (kg/m³)</label><input type="number" data-k="P2" value="1900" step="50"></div>
+  <div class="field"><label>φ ciment. Af₂ (°)</label><input type="number" data-k="Af2" value="20" step="1"></div>
+  <div class="field"><label>Cohesión C₂ (kg/m²)</label><input type="number" data-k="C2" value="4000" step="100"></div>
+  <div class="field"><label>Sobrecarga qsc (kg/m²)</label><input type="number" data-k="qsc" value="1000" step="100"></div>
 
-  <div class="layout">
-    <!-- ============ INPUT PANEL ============ -->
-    <aside class="panel-inputs" id="inputPanel">
-      <h2>Datos de entrada</h2>
+  <h3>🧱 Materiales</h3>
+  <div class="field"><label>γ concreto (kg/m³)</label><input type="number" data-k="Pem" value="2400" step="50"></div>
+  <div class="field"><label>γ suelo zapata (kg/m³)</label><input type="number" data-k="Pes" value="1800" step="50"></div>
+  <div class="field"><label>f'c (kg/cm²)</label><input type="number" data-k="fc" value="210" step="10"></div>
+  <div class="field"><label>fy (kg/cm²)</label><input type="number" data-k="fy" value="4200" step="100"></div>
 
-      <fieldset>
-        <legend>Geometría</legend>
-        <div class="field"><label>Altura pantalla H2</label><input type="number" step="0.01" id="H2" value="6.0"><div class="unit-hint">m</div></div>
-        <div class="field"><label>Altura zapata H3</label><input type="number" step="0.01" id="H3" value="0.7"><div class="unit-hint">m</div></div>
-        <div class="field"><label>Profundidad cimentación D</label><input type="number" step="0.01" id="D" value="1.5"><div class="unit-hint">m</div></div>
-        <div class="field"><label>Profundidad dentellón D2</label><input type="number" step="0.01" id="D2" value="0.0"><div class="unit-hint">m</div></div>
-        <div class="field"><label>Espesor muro base t_b</label><input type="number" step="0.01" id="t_b" value="0.7"><div class="unit-hint">m</div></div>
-        <div class="field"><label>Espesor muro corona t_c</label><input type="number" step="0.01" id="t_c" value="0.5"><div class="unit-hint">m</div></div>
-        <div class="field"><label>Proyección pie p_p</label><input type="number" step="0.01" id="p_p" value="0.7"><div class="unit-hint">m</div></div>
-        <div class="field"><label>Proyección talón p_t</label><input type="number" step="0.01" id="p_t" value="2.6"><div class="unit-hint">m</div></div>
-        <div class="field"><label>B = p_p + t_b + p_t</label><input type="text" id="B_display" value="4.00" disabled style="text-align:right; color:var(--blue-deep); font-weight:600; background:#E7F0FA;"><div class="unit-hint">m (derivado)</div></div>
-        <div class="field"><label>Cara vertical del tallo</label>
-          <select id="cara_vertical"><option value="interior">interior</option><option value="exterior">exterior</option></select>
-        </div>
-      </fieldset>
+  <h3>🌊 Sismo</h3>
+  <div class="field"><label>Coef. sísmico Kh</label><input type="number" data-k="Kh" value="0.15" step="0.01"></div>
 
-      <fieldset>
-        <legend>Terreno inclinado</legend>
-        <div class="field"><label>Ángulo inclinación Ai</label><input type="number" step="0.1" id="Ai" value="10.0"><div class="unit-hint">°</div></div>
-        <div class="field"><label>Altura adicional H1</label><input type="number" step="0.001" id="H1" value="0.458"><div class="unit-hint">m</div></div>
-      </fieldset>
+  <button class="btn" onclick="loadDefaults()">🔄 Valores Predeterminados</button>
+</aside>
 
-      <fieldset>
-        <legend>Suelo de relleno</legend>
-        <div class="field"><label>Peso específico P1</label><input type="number" step="10" id="P1" value="1800"><div class="unit-hint">kg/m³</div></div>
-        <div class="field"><label>Ángulo de fricción Af1</label><input type="number" step="0.5" id="Af1" value="30.0"><div class="unit-hint">°</div></div>
-        <div class="field"><label>Cohesión C1</label><input type="number" step="10" id="C1" value="0"><div class="unit-hint">kg/m²</div></div>
-        <div class="field"><label>Sobrecarga qsc</label><input type="number" step="50" id="qsc" value="1000"><div class="unit-hint">kg/m²</div></div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Suelo de cimentación</legend>
-        <div class="field"><label>Peso específico P2</label><input type="number" step="10" id="P2" value="1900"><div class="unit-hint">kg/m³</div></div>
-        <div class="field"><label>Ángulo de fricción Af2</label><input type="number" step="0.5" id="Af2" value="20.0"><div class="unit-hint">°</div></div>
-        <div class="field"><label>Cohesión C2</label><input type="number" step="50" id="C2" value="4000"><div class="unit-hint">kg/m²</div></div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Materiales &amp; sismo</legend>
-        <div class="field"><label>Peso esp. concreto Pem</label><input type="number" step="10" id="Pem" value="2400"><div class="unit-hint">kg/m³</div></div>
-        <div class="field"><label>Peso esp. suelo sobre zapata Pes</label><input type="number" step="10" id="Pes" value="1800"><div class="unit-hint">kg/m³</div></div>
-        <div class="field"><label>Coef. sísmico horizontal Kh</label><input type="number" step="0.01" id="Kh" value="0.15"><div class="unit-hint">—</div></div>
-        <div class="field"><label>f'c concreto</label><input type="number" step="5" id="fc" value="210"><div class="unit-hint">kg/cm²</div></div>
-        <div class="field"><label>fy acero</label><input type="number" step="100" id="fy" value="4200"><div class="unit-hint">kg/cm²</div></div>
-      </fieldset>
-    </aside>
-
-    <!-- ============ MAIN CONTENT ============ -->
-    <main class="content">
-
-      <!-- Signature: wall cross-section drawing -->
-      <section class="card">
-        <h3>Sección transversal <span class="tag" id="methodTagDraw">RANKINE</span></h3>
-        <p class="desc">Dibujo acotado, generado a partir de los datos de entrada. Se redibuja con cada cambio.</p>
-        <div class="drawing-wrap">
-          <div class="drawing-frame"><svg id="wallSvg" viewBox="0 0 760 560" style="width:100%; height:auto; display:block;"></svg></div>
-          <div class="title-block">
-            <dl style="margin:0;">
-              <dt>Proyecto</dt><dd>Muro de contención en voladizo</dd>
-              <dt>Método de empuje</dt><dd id="tbMethod">Rankine</dd>
-              <dt>Altura total Hp</dt><dd id="tbHp">–</dd>
-              <dt>Ancho zapata B</dt><dd id="tbB">–</dd>
-              <dt>Cara vertical</dt><dd id="tbCara">interior</dd>
-              <dt>Escala</dt><dd>Automática (ajustada al lienzo)</dd>
-            </dl>
-          </div>
-        </div>
-      </section>
-
-      <!-- Stability checks -->
-      <section class="card">
-        <h3>Verificaciones de estabilidad</h3>
-        <p class="desc">Volteo, deslizamiento, capacidad de carga y excentricidad — condición de servicio, caso estático y sísmico (pseudo-estático, Mononobe-Okabe).</p>
-        <div class="stability-grid">
-          <div class="stab-col">
-            <h4>Estático</h4>
-            <table class="checks" id="tableEst">
-              <thead><tr><th>Verificación</th><th>Calculado</th><th>Límite</th><th>Estado</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <div class="stab-col">
-            <h4>Sísmico</h4>
-            <table class="checks" id="tableSis">
-              <thead><tr><th>Verificación</th><th>Calculado</th><th>Límite</th><th>Estado</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- Contact pressure -->
-      <section class="card">
-        <h3>Presión de contacto zapata–suelo</h3>
-        <p class="desc">Distribución trapezoidal bajo la zapata (cargas de servicio) y capacidad de carga última (Meyerhof/Vesic) para comparación directa.</p>
-        <div class="pressure-grid">
-          <div>
-            <canvas id="pressureChart" height="230"></canvas>
-          </div>
-          <div class="pressure-figures">
-            <div class="fig"><div class="k">q pie (estático)</div><div class="v" id="fPieEst">–</div></div>
-            <div class="fig"><div class="k">q talón (estático)</div><div class="v" id="fTalonEst">–</div></div>
-            <div class="fig"><div class="k">q pie (sísmico)</div><div class="v" id="fPieSis">–</div></div>
-            <div class="fig"><div class="k">q talón (sísmico)</div><div class="v" id="fTalonSis">–</div></div>
-            <div class="fig"><div class="k">qu última (estático)</div><div class="v small" id="fQuEst">–</div></div>
-            <div class="fig"><div class="k">qu última (sísmico)</div><div class="v small" id="fQuSis">–</div></div>
-            <div class="fig"><div class="k">Nq / Nc / Nγ</div><div class="v small" id="fNfactors">–</div></div>
-            <div class="fig"><div class="k">ks (coef. de balasto, qu/FS)</div><div class="v small" id="fKs">–</div></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Reinforcement -->
-      <section class="card">
-        <h3>Diseño de refuerzo <span class="tag">Norma E.060 / ACI</span></h3>
-        <p class="desc">Momento y cortante últimos por sección crítica, cuantía de acero y combinación de fierro propuesta. Las tarjetas ámbar son la combinación sísmica.</p>
-        <div id="rebarPantalla"></div>
-        <div id="rebarTalon"></div>
-        <div id="rebarPuntera"></div>
-      </section>
-
-      <!-- Internal force diagrams -->
-      <section class="card">
-        <h3>Diagramas de fuerzas internas</h3>
-        <p class="desc">Momento y cortante últimos a lo largo de la pantalla (medidos desde la base) y de la zapata (medidos desde la cara del tallo hacia cada extremo). Línea sólida: estático · línea punteada: sísmico.</p>
-        <div class="diagram-grid">
-          <div class="diagram-box">
-            <h4>Pantalla — Mu (kg·m/m)</h4>
-            <canvas id="stemMomentChart" height="220"></canvas>
-          </div>
-          <div class="diagram-box">
-            <h4>Pantalla — Vu (kg/m)</h4>
-            <canvas id="stemShearChart" height="220"></canvas>
-          </div>
-          <div class="diagram-box">
-            <h4>Zapata · Puntera — Mu y Vu</h4>
-            <canvas id="punteraChart" height="220"></canvas>
-          </div>
-          <div class="diagram-box">
-            <h4>Zapata · Talón — Mu y Vu</h4>
-            <canvas id="talonChart" height="220"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <!-- Export / calculation memo -->
-      <section class="card" id="exportSection">
-        <h3>Memoria de cálculo <span class="tag">Exportar</span></h3>
-        <p class="desc">Completa el cajetín y exporta el análisis como informe imprimible/PDF o como texto plano, con la misma estructura que la memoria de cálculo de consola.</p>
-        <div class="export-grid">
-          <div class="export-field"><label>Proyecto</label><input type="text" id="mProyecto" placeholder="Muro de contención — Km 00+000" value="Muro de contención en voladizo"></div>
-          <div class="export-field"><label>Ubicación</label><input type="text" id="mUbicacion" placeholder="Ciudad, región"></div>
-          <div class="export-field"><label>Elaborado por</label><input type="text" id="mElaborado" placeholder="Nombre del ingeniero"></div>
-          <div class="export-field"><label>Revisado por</label><input type="text" id="mRevisado" placeholder="Nombre del revisor"></div>
-        </div>
-        <div class="export-actions">
-          <button class="btn accent" id="btnPrint">🖨 Imprimir / Exportar PDF</button>
-          <button class="btn" id="btnTxt">⬇ Descargar memoria (.txt)</button>
-        </div>
-      </section>
-
-    </main>
+<main class="main">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('verif',this)">✅ Verificaciones</button>
+    <button class="tab" onclick="switchTab('section',this)">📐 Sección</button>
+    <button class="tab" onclick="switchTab('geo',this)">🌍 Geotecnia</button>
+    <button class="tab" onclick="switchTab('struct',this)">🏗️ Estructural</button>
+    <button class="tab" onclick="switchTab('fem',this)">🔬 FEM</button>
+    <button class="tab" onclick="switchTab('charts',this)">📈 Gráficos</button>
+    <button class="tab" onclick="switchTab('memory',this)">📋 Memoria</button>
   </div>
-</div>
 
-<footer class="note">Cálculo realizado íntegramente en el navegador — no se envían datos a ningún servidor. El módulo de elementos finitos (malla/resortes Winkler) del script original no está incluido en esta versión.</footer>
+  <div class="content">
+    <div class="panel active" id="verif">
+      <div class="section-title">📊 Verificación de Estabilidad — Comparativa de Métodos</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="method-header rankine"><span class="badge rankine">RANKINE</span> Análisis Estático</div>
+          <table id="tblRankineEst"><thead><tr><th>Verificación</th><th>Calculado</th><th>Límite</th><th>Estado</th></tr></thead><tbody></tbody></table>
+          <div style="margin-top:8px">
+            <div class="info-row"><span>Ka</span><span id="ka_r">—</span></div>
+            <div class="info-row"><span>Ph estático</span><span id="ph_r">—</span></div>
+            <div class="info-row"><span>q_pie</span><span id="qpie_r">—</span></div>
+            <div class="info-row"><span>q_talón</span><span id="qtalon_r">—</span></div>
+            <div class="info-row"><span>q_última</span><span id="qu_r">—</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="method-header coulomb"><span class="badge coulomb">COULOMB</span> Análisis Estático</div>
+          <table id="tblCoulombEst"><thead><tr><th>Verificación</th><th>Calculado</th><th>Límite</th><th>Estado</th></tr></thead><tbody></tbody></table>
+          <div style="margin-top:8px">
+            <div class="info-row"><span>Ka</span><span id="ka_c">—</span></div>
+            <div class="info-row"><span>Ph estático</span><span id="ph_c">—</span></div>
+            <div class="info-row"><span>q_pie</span><span id="qpie_c">—</span></div>
+            <div class="info-row"><span>q_talón</span><span id="qtalon_c">—</span></div>
+            <div class="info-row"><span>q_última</span><span id="qu_c">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">🌊 Análisis Sísmico (Mononobe-Okabe)</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="method-header rankine"><span class="badge rankine">RANKINE</span> Análisis Sísmico</div>
+          <table id="tblRankineSis"><thead><tr><th>Verificación</th><th>Calculado</th><th>Límite</th><th>Estado</th></tr></thead><tbody></tbody></table>
+          <div style="margin-top:8px">
+            <div class="info-row"><span>Kae</span><span id="kae_r">—</span></div>
+            <div class="info-row"><span>Ph sísmico</span><span id="ph_sis_r">—</span></div>
+            <div class="info-row"><span>q_pie sísmico</span><span id="qpie_sis_r">—</span></div>
+            <div class="info-row"><span>q_talón sísmico</span><span id="qtalon_sis_r">—</span></div>
+            <div class="info-row"><span>q_última sísmica</span><span id="qu_sis_r">—</span></div>
+            <div class="info-row"><span>FS capacidad sísmico</span><span id="fsc_sis_r">—</span></div>
+            <div class="info-row"><span>Excentricidad sísmica</span><span id="e_sis_r">—</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="method-header coulomb"><span class="badge coulomb">COULOMB</span> Análisis Sísmico</div>
+          <table id="tblCoulombSis"><thead><tr><th>Verificación</th><th>Calculado</th><th>Límite</th><th>Estado</th></tr></thead><tbody></tbody></table>
+          <div style="margin-top:8px">
+            <div class="info-row"><span>Kae</span><span id="kae_c">—</span></div>
+            <div class="info-row"><span>Ph sísmico</span><span id="ph_sis_c">—</span></div>
+            <div class="info-row"><span>q_pie sísmico</span><span id="qpie_sis_c">—</span></div>
+            <div class="info-row"><span>q_talón sísmico</span><span id="qtalon_sis_c">—</span></div>
+            <div class="info-row"><span>q_última sísmica</span><span id="qu_sis_c">—</span></div>
+            <div class="info-row"><span>FS capacidad sísmico</span><span id="fsc_sis_c">—</span></div>
+            <div class="info-row"><span>Excentricidad sísmica</span><span id="e_sis_c">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="section">
+      <div class="section-title">📐 Sección Transversal del Muro de Contención</div>
+      <div class="card" style="padding:6px"><canvas id="sectionCanvas" class="fem-canvas" style="height:520px"></canvas></div>
+      <div class="grid-3" style="margin-top:10px">
+        <div class="card"><div class="card-title">Ancho Total B</div><div style="font-size:20px;font-weight:700;color:var(--accent)" id="dim_B">—</div><div style="font-size:10px;color:var(--muted)">m</div></div>
+        <div class="card"><div class="card-title">Altura Total</div><div style="font-size:20px;font-weight:700;color:var(--accent)" id="dim_H">—</div><div style="font-size:10px;color:var(--muted)">m (H₁+H₂+H₃)</div></div>
+        <div class="card"><div class="card-title">Área Sección</div><div style="font-size:20px;font-weight:700;color:var(--accent)" id="dim_A">—</div><div style="font-size:10px;color:var(--muted)">m²</div></div>
+      </div>
+    </div>
+
+    <div class="panel" id="geo">
+      <div class="section-title">🌍 Análisis Geotécnico Detallado</div>
+      <div class="grid-2">
+        <div class="card"><div class="method-header rankine"><span class="badge rankine">RANKINE</span></div><div id="geoRankine"></div></div>
+        <div class="card"><div class="method-header coulomb"><span class="badge coulomb">COULOMB</span></div><div id="geoCoulomb"></div></div>
+      </div>
+    </div>
+
+    <div class="panel" id="struct">
+      <div class="section-title">🏗️ Diseño de Refuerzo — E.060 / ACI (Comparativo)</div>
+      <div class="grid-2">
+        <div><div class="method-header rankine"><span class="badge rankine">RANKINE</span> Diseño Estructural</div><div id="structRankine"></div></div>
+        <div><div class="method-header coulomb"><span class="badge coulomb">COULOMB</span> Diseño Estructural</div><div id="structCoulomb"></div></div>
+      </div>
+    </div>
+
+    <div class="panel" id="fem">
+      <div class="section-title">🔬 Análisis por Elementos Finitos (malla CST, apoyo elástico tipo Winkler)</div>
+      <div class="grid-3" style="margin-bottom:10px">
+        <div class="field"><label>Método (Ka / empuje)</label><select id="femMethod"><option value="rankine">Rankine</option><option value="coulomb">Coulomb</option></select></div>
+        <div class="field"><label>Caso de carga</label><select id="femCase"><option value="static">Estático</option><option value="seismic">Sísmico</option></select></div>
+        <div class="field"><label>Densidad de malla</label><input type="number" id="femMeshParam" value="3" step="0.5" min="0.5" max="8"></div>
+      </div>
+      <div class="grid-3" style="margin-bottom:10px">
+        <div class="field"><label>Escala visual de la deformada (auto)</label><input type="number" id="femEscala" value="200" step="10" min="1" data-auto="1"></div>
+        <div class="card" style="grid-column:span 2"><div class="card-title">Estado del modelo</div><div id="femStatus" style="font-size:11px;color:var(--muted)">Abre esta pestaña para ejecutar el análisis FEM.</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="chart-box"><h4>Malla Deformada</h4><canvas id="femMesh" class="fem-canvas"></canvas></div>
+        <div class="chart-box"><h4>Esfuerzos Sxx (kg/cm²)</h4><canvas id="femSxx" class="fem-canvas"></canvas></div>
+      </div>
+      <div class="grid-3">
+        <div class="card"><div class="card-title">Despl. Corona (dx)</div><div style="font-size:22px;font-weight:700;color:var(--accent)" id="fem_dx">—</div><div style="font-size:10px;color:var(--muted)">mm</div></div>
+        <div class="card"><div class="card-title">Asentamiento Máx</div><div style="font-size:22px;font-weight:700;color:var(--accent)" id="fem_dy">—</div><div style="font-size:10px;color:var(--muted)">mm</div></div>
+        <div class="card"><div class="card-title">Sxx Máx Tensión</div><div style="font-size:22px;font-weight:700;color:var(--accent)" id="fem_sxx">—</div><div style="font-size:10px;color:var(--muted)">kg/cm²</div></div>
+      </div>
+    </div>
+
+    <div class="panel" id="charts">
+      <div class="section-title">📈 Diagramas Comparativos — <span class="legend-color legend-rankine"></span>Rankine &nbsp; <span class="legend-color legend-coulomb"></span>Coulomb</div>
+      <div class="grid-2">
+        <div class="chart-box"><h4>Empuje Horizontal del Terreno</h4><div class="chart-container"><canvas id="chartPresion"></canvas></div></div>
+        <div class="chart-box"><h4>Cortante en Pantalla</h4><div class="chart-container"><canvas id="chartVpantalla"></canvas></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="chart-box"><h4>Momento en Pantalla</h4><div class="chart-container"><canvas id="chartMpantalla"></canvas></div></div>
+        <div class="chart-box"><h4>Cortante en Zapata</h4><div class="chart-container"><canvas id="chartVzapata"></canvas></div></div>
+      </div>
+      <div class="chart-box"><h4>Momento en Zapata</h4><div class="chart-container"><canvas id="chartMzapata"></canvas></div></div>
+    </div>
+
+    <div class="panel" id="memory">
+      <div class="export-bar">
+        <div class="info">📋 <strong>Memoria de Cálculo Detallada</strong> — Documento técnico completo con todas las fórmulas, valores y resultados</div>
+        <button class="btn btn-export" onclick="exportMemory()">💾 Exportar Memoria (HTML)</button>
+      </div>
+      <div id="memoryContent" class="memory-container"></div>
+    </div>
+  </div>
+</main>
+</div>
 
 <script>
-/* ======================================================================
-   MURO DE CONTENCIÓN — MOTOR DE CÁLCULO (portado desde muro.py)
-   ====================================================================== */
-const F_D_CARGA=1.4, F_L_CARGA=1.7, F_D_SISMO=1.2, F_L_SISMO=1.0, F_E_SISMO=1.0;
-const toRad = d => d*Math.PI/180;
-const isFiniteNum = v => typeof v==='number' && isFinite(v);
+// ============ CONSTANTES ============
+const F_D=1.4,F_L=1.7,F_Ds=1.2,F_Ls=1.0,F_Es=1.0;
+Chart.defaults.animation=false;
+Chart.defaults.responsive=true;
+Chart.defaults.maintainAspectRatio=false;
 
-function fmt(v, dec=2){
-  if(v===Infinity) return '∞';
-  if(v===-Infinity) return '-∞';
-  if(v===undefined || v===null || Number.isNaN(v)) return '—';
-  return v.toLocaleString('es-PE', {minimumFractionDigits:dec, maximumFractionDigits:dec});
-}
+let lastAnalysis=null;
+const charts={};
+let debounceTimer=null;
 
 function getData(){
-  const g = id => parseFloat(document.getElementById(id).value);
-  const d = {
-    H2:g('H2'), H3:g('H3'), D:g('D'), D2:g('D2'), t_b:g('t_b'), t_c:g('t_c'),
-    p_p:g('p_p'), p_t:g('p_t'), cara_vertical:document.getElementById('cara_vertical').value,
-    Ai:g('Ai'), H1:g('H1'),
-    P1:g('P1'), Af1:g('Af1'), C1:g('C1'), qsc:g('qsc'),
-    P2:g('P2'), Af2:g('Af2'), C2:g('C2'),
-    Pem:g('Pem'), Pes:g('Pes'), Kh:g('Kh'), fc:g('fc'), fy:g('fy')
-  };
-  d.B = d.p_p + d.t_b + d.p_t; // B SIEMPRE derivado (ver correcciones previas)
-  document.getElementById('B_display').value = fmt(d.B,2);
-  return d;
+  const data={};
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const k=el.dataset.k;
+    data[k]=el.type==='number'?parseFloat(el.value):el.value;
+  });
+  data.B=data.p_p+data.t_b+data.p_t;
+  // H1 ya no es un input independiente: el talud del terreno nace en la corona del tallo
+  // (x_fill_start, cota H3+H2) y sube hasta el borde del talón (x=B), por lo que el
+  // recorrido horizontal del talud es exactamente Bt + sobreancho_tallo = p_t + (t_b - t_c).
+  // Fijar H1 de forma independiente duplicaba esta información y permitía geometrías
+  // inconsistentes con Ai/p_t/t_b/t_c.
+  const sobreancho=data.t_b-data.t_c;
+  const run_talud=Math.max(data.p_t+sobreancho,0);
+  data.H1=data.Ai>0?Math.tan(data.Ai*Math.PI/180)*run_talud:0;
+  const h1Field=document.getElementById('H1_calc');
+  if(h1Field)h1Field.value=data.H1.toFixed(3);
+  return data;
 }
 
-/* ---------- Cálculo geotécnico completo (Rankine o Coulomb) ---------- */
-function computeAnalysis(data, method){
-  const {H2,H3,D,D2,t_b,t_c,p_p:Bp,p_t:Bt,Ai,H1,P1,Af1,C1,P2,Af2,C2,Pem,Pes,qsc,Kh,B}=data;
-  const Kv=0.0, cara_vertical=data.cara_vertical;
-  const delta_wall_soil_rad = toRad((2/3)*Af1);
-  const beta_from_vertical_rad = (cara_vertical==='interior') ? 0.0 : (H2>0 ? Math.atan((t_b-t_c)/H2) : 0.0);
-  const beta_from_horizontal_rad = Math.PI/2 - beta_from_vertical_rad;
-  const Hp = H1+H2+H3, Af1r=toRad(Af1), alpha_rad=toRad(Ai), Af2r=toRad(Af2);
-
-  const Area_tallo_rect=t_c*H2, Area_tallo_tri=0.5*(t_b-t_c)*H2;
-  const P_tallo_rect=Area_tallo_rect*Pem, P_tallo_tri=Area_tallo_tri*Pem;
-  const P_zapata=(B*H3)*Pem, P_suelo_talon=(Bt*H2)*Pes;
-  const P_suelo_talud=(alpha_rad>0 ? 0.5*H1*(H1/Math.tan(alpha_rad)) : 0)*Pes;
-
-  let Bm_tallo_rect,Bm_tallo_tri;
-  if(cara_vertical==='interior'){ Bm_tallo_rect=Bp+t_c/2.0; Bm_tallo_tri=Bp+t_c+(t_b-t_c)/3.0; }
-  else { Bm_tallo_rect=Bp+(t_b-t_c)+t_c/2; Bm_tallo_tri=Bp+(2/3)*(t_b-t_c); }
-  const Bm_zapata=B/2, Bm_suelo_talon=B-Bt/2;
-  const Bm_suelo_talud = alpha_rad>0 ? B-(H1/Math.tan(alpha_rad))/3 : B-Bt;
-
-  const M_tallo_rect=P_tallo_rect*Bm_tallo_rect, M_tallo_tri=P_tallo_tri*Bm_tallo_tri;
-  const M_zapata=P_zapata*Bm_zapata, M_suelo_talon=P_suelo_talon*Bm_suelo_talon, M_suelo_talud=P_suelo_talud*Bm_suelo_talud;
-
-  const SFv_R=P_tallo_rect+P_tallo_tri+P_zapata+P_suelo_talon+P_suelo_talud;
-  const SMr_R=M_tallo_rect+M_tallo_tri+M_zapata+M_suelo_talon+M_suelo_talud;
-
-  let Ka, Pa_estatico, Ph_estatico, Pv_estatico, P_qsc_h_estatico;
+function geotech(data,method='rankine'){
+  const {H2,B,H3,D,t_b,t_c,p_p:Bp,p_t:Bt,Ai,H1,D2,P1,Af1,C1,P2,Af2,C2,Pem,Pes,qsc,Kh,cara_vertical}=data;
+  const Kv=0;
+  const delta_rad=(2/3)*Af1*Math.PI/180;
+  const beta_vert_rad=cara_vertical==='interior'?0:Math.atan((t_b-t_c)/H2);
+  const beta_horiz_rad=Math.PI/2-beta_vert_rad;
+  const Hp=H1+H2+H3;
+  const Af1r=Af1*Math.PI/180;
+  const alpha_rad=Ai*Math.PI/180;
+  const Af2r=Af2*Math.PI/180;
+  
+  const A_tr=t_c*H2,A_ttri=0.5*(t_b-t_c)*H2;
+  const P_tr=A_tr*Pem,P_ttri=A_ttri*Pem;
+  const P_z=B*H3*Pem,P_st=Bt*H2*Pes;
+  const run_talud=alpha_rad>0?Bt+(t_b-t_c):0;
+  const P_stalud=(alpha_rad>0?0.5*H1*run_talud:0)*Pes;
+  const P_qsc_v=qsc*Bt;
+  
+  let Bm_tr,Bm_ttri;
+  if(cara_vertical==='interior'){Bm_tr=Bp+t_c/2;Bm_ttri=Bp+t_c+(t_b-t_c)/3;}
+  else{Bm_tr=Bp+(t_b-t_c)+t_c/2;Bm_ttri=Bp+(2/3)*(t_b-t_c);}
+  const Bm_z=B/2,Bm_st=B-Bt/2;
+  const Bm_stalud=alpha_rad>0?B-run_talud/3:B-Bt;
+  
+  const SFv_R=P_tr+P_ttri+P_z+P_st+P_stalud;
+  const SMr_R=P_tr*Bm_tr+P_ttri*Bm_ttri+P_z*Bm_z+P_st*Bm_st+P_stalud*Bm_stalud;
+  
+  let Ka,Ph,Pv,P_qsc_h;
   if(method==='rankine'){
-    const term1=Math.cos(alpha_rad);
-    if(Math.cos(alpha_rad)**2 < Math.cos(Af1r)**2){ Ka=1.0; }
-    else{ const term2=Math.sqrt(Math.cos(alpha_rad)**2-Math.cos(Af1r)**2); Ka=term1*(term1-term2)/(term1+term2); }
-    Pa_estatico=0.5*P1*Hp**2*Ka;
-    Pv_estatico=Pa_estatico*Math.sin(alpha_rad); Ph_estatico=Pa_estatico*Math.cos(alpha_rad);
-    P_qsc_h_estatico=qsc*Ka*Hp*Math.cos(alpha_rad);
-  } else {
+    const c1=Math.cos(alpha_rad);
+    if(c1*c1<Math.cos(Af1r)*Math.cos(Af1r))Ka=1;
+    else{const c2=Math.sqrt(c1*c1-Math.cos(Af1r)*Math.cos(Af1r));Ka=c1*(c1-c2)/(c1+c2);}
+    const Pa=0.5*P1*Hp*Hp*Ka;
+    Pv=Pa*Math.sin(alpha_rad);
+    Ph=Pa*Math.cos(alpha_rad);
+    P_qsc_h=qsc*Ka*Hp*Math.cos(alpha_rad);
+  }else{
     try{
-      const num_Ka=Math.sin(beta_from_horizontal_rad+Af1r)**2;
-      const den1_Ka=Math.sin(beta_from_horizontal_rad)**2*Math.sin(beta_from_horizontal_rad-delta_wall_soil_rad);
-      const sqrt_num=Math.sin(Af1r+delta_wall_soil_rad)*Math.sin(Af1r-alpha_rad);
-      const sqrt_den=Math.sin(beta_from_horizontal_rad-delta_wall_soil_rad)*Math.sin(alpha_rad+beta_from_horizontal_rad);
-      if(den1_Ka<=0 || sqrt_den<=0 || (sqrt_num/sqrt_den)<0){ Ka=1.0; }
-      else{ const den2_Ka=(1+Math.sqrt(sqrt_num/sqrt_den))**2; Ka=num_Ka/(den1_Ka*den2_Ka); }
-    }catch(e){ Ka=1.0; }
-    Pa_estatico=0.5*P1*Hp**2*Ka;
-    const ang = delta_wall_soil_rad + Math.PI/2 - beta_from_horizontal_rad;
-    Ph_estatico=Pa_estatico*Math.cos(ang); Pv_estatico=Pa_estatico*Math.sin(ang);
-    P_qsc_h_estatico=qsc*Hp*Ka*Math.cos(ang);
+      const num=Math.sin(beta_horiz_rad+Af1r)**2;
+      const den1=Math.sin(beta_horiz_rad)**2*Math.sin(beta_horiz_rad-delta_rad);
+      const sn=Math.sin(Af1r+delta_rad)*Math.sin(Af1r-alpha_rad);
+      const sd=Math.sin(beta_horiz_rad-delta_rad)*Math.sin(alpha_rad+beta_horiz_rad);
+      if(den1<=0||sd<=0||sn/sd<0)Ka=1;
+      else{const d2=(1+Math.sqrt(sn/sd))**2;Ka=num/(den1*d2);}
+    }catch(e){Ka=1;}
+    const Pa=0.5*P1*Hp*Hp*Ka;
+    Ph=Pa*Math.cos(delta_rad+Math.PI/2-beta_horiz_rad);
+    Pv=Pa*Math.sin(delta_rad+Math.PI/2-beta_horiz_rad);
+    P_qsc_h=qsc*Hp*Ka*Math.cos(delta_rad+Math.PI/2-beta_horiz_rad);
   }
-
-  const SFv_estatico_total=SFv_R+Pv_estatico, SMr_estatico_total=SMr_R+(Pv_estatico*B);
-  const Mo_total_estatico=Ph_estatico*(Hp/3)+P_qsc_h_estatico*(Hp/2);
-  const FSvolteo_estatico = Mo_total_estatico>0 ? SMr_estatico_total/Mo_total_estatico : Infinity;
-
-  const Dp=D+D2, Kp=Math.tan(Math.PI/4+Af2r/2)**2;
-  const Pp_estatico=0.5*Kp*P2*Dp**2+2*C2*Math.sqrt(Kp)*Dp;
-  const den_fs_desl_est=Ph_estatico+P_qsc_h_estatico;
-  const FSdeslizamiento_estatico = den_fs_desl_est>0 ? (SFv_estatico_total*Math.tan((2/3)*Af2r)+B*(2/3)*C2+Pp_estatico)/den_fs_desl_est : Infinity;
-
-  const e_estatico = SFv_estatico_total>0 ? B/2-(SMr_estatico_total-Mo_total_estatico)/SFv_estatico_total : 0;
-  const emax_estatico=B/6;
-  const qpie_estatico = B>0 ? (SFv_estatico_total/B)*(1+6*e_estatico/B) : 0;
-  const qtalon_estatico = B>0 ? (SFv_estatico_total/B)*(1-6*e_estatico/B) : 0;
-  const Bp_eff_estatico = B-2*e_estatico;
-
-  const Nq=Math.tan(toRad(45+Af2/2))**2*Math.exp(Math.PI*Math.tan(Af2r));
-  const Nc = Af2r>0 ? (Nq-1)/Math.tan(Af2r) : 5.14;
-  const Ny = Af2r>0 ? 2*(Nq+1)*Math.tan(Af2r) : 0;
-
-  const Fcd = Bp_eff_estatico>0 ? 1+0.4*(D/Bp_eff_estatico) : 1;
-  const Fqd = Bp_eff_estatico>0 ? 1+2*Math.tan(Af2r)*(1-Math.sin(Af2r))**2*(D/Bp_eff_estatico) : 1;
-  const Fyd = 1;
-  const Y_est = SFv_estatico_total>0 ? Math.atan((Ph_estatico+P_qsc_h_estatico)/SFv_estatico_total) : 0;
-  const Fci=(1-Y_est/(Math.PI/2))**2, Fqi=(1-Y_est/(Math.PI/2))**2;
-  const Fyi = Af2r>0 ? (1-Y_est/Af2r)**2 : 0;
-
-  const qu_estatico = C2*Nc*Fcd*Fci + P2*D*Nq*Fqd*Fqi + 0.5*P2*Bp_eff_estatico*Ny*Fyd*Fyi;
-  const FScarga_estatico = qpie_estatico>0 ? qu_estatico/qpie_estatico : Infinity;
-
-  // presión última (factorada) para diseño de zapata
-  const SFv_u=F_D_CARGA*(SFv_R+Pv_estatico), SMr_u=F_D_CARGA*(SMr_R+Pv_estatico*B);
-  const Mo_u=F_D_CARGA*Ph_estatico*(Hp/3)+F_L_CARGA*P_qsc_h_estatico*(Hp/2);
-  const e_u = SFv_u>0 ? B/2-(SMr_u-Mo_u)/SFv_u : 0;
-  const qpie_u = B>0 ? (SFv_u/B)*(1+6*e_u/B) : 0;
-  const qtalon_u = B>0 ? (SFv_u/B)*(1-6*e_u/B) : 0;
-
-  // --- Sísmico ---
-  let Kae=Ka, Ph_seismic_total=0, Pv_seismic_total=0, Delta_Ph=0, P_Iw=0, P_Is=0;
-  let Mo_Delta_Ph=0, Mo_Iw=0, Mo_Is=0, Mo_total_seismic=0;
-  let e_seismic=e_estatico, qpie_seismic=qpie_estatico, qtalon_seismic=qtalon_estatico, qu_seismic=qu_estatico;
-  let qpie_u_sismo=qpie_u, qtalon_u_sismo=qtalon_u;
-  let FSvolteo_seismic=NaN, FSdeslizamiento_seismic=NaN, FScarga_seismic=NaN;
-
+  
+  const Pa_total=0.5*P1*Hp*Hp*Ka;
+  const SFv=SFv_R+Pv+P_qsc_v,SMr=SMr_R+Pv*B+P_qsc_v*Bm_st;
+  const Mo=Ph*(Hp/3)+P_qsc_h*(Hp/2);
+  const FSv=Mo>0?SMr/Mo:Infinity;
+  
+  const Dp=D+D2;
+  const Kp_rankine=Math.tan(Math.PI/4+Af2r/2)**2;
+  const beta_p_rad=Math.PI/2,alpha_p_rad=0,delta_p_rad=(2/3)*Af2r;
+  let Kp_coulomb=Kp_rankine,Kp_coulomb_valido=true;
+  try{
+    const num_p=Math.sin(beta_p_rad-Af2r)**2;
+    const den1_p=Math.sin(beta_p_rad)**2*Math.sin(beta_p_rad+delta_p_rad);
+    const sn_p=Math.sin(Af2r+delta_p_rad)*Math.sin(Af2r+alpha_p_rad);
+    const sd_p=Math.sin(beta_p_rad+delta_p_rad)*Math.sin(beta_p_rad-alpha_p_rad);
+    if(den1_p>0&&sd_p>0&&sn_p/sd_p>=0){
+      const term_p=1-Math.sqrt(sn_p/sd_p);
+      if(term_p>0){Kp_coulomb=num_p/(den1_p*term_p*term_p);}
+      else{Kp_coulomb=Kp_rankine;Kp_coulomb_valido=false;}
+    }else{Kp_coulomb=Kp_rankine;Kp_coulomb_valido=false;}
+  }catch(e){Kp_coulomb=Kp_rankine;Kp_coulomb_valido=false;}
+  const Kp=method==='rankine'?Kp_rankine:Kp_coulomb;
+  const Pp=0.5*Kp*P2*Dp*Dp+2*C2*Math.sqrt(Kp)*Dp;
+  const den_d=Ph+P_qsc_h;
+  const FSd=den_d>0?(SFv*Math.tan(2/3*Af2r)+B*B*2/3*C2+Pp)/den_d:Infinity;
+  
+  const e=SFv>0?B/2-(SMr-Mo)/SFv:0,emax=B/6;
+  const qpie=B>0?(SFv/B)*(1+6*e/B):0,qtalon=B>0?(SFv/B)*(1-6*e/B):0;
+  const Bp_eff=B-2*e;
+  
+  const Nq=Math.tan(Math.PI/4+Af2r/2)**2*Math.exp(Math.PI*Math.tan(Af2r));
+  const Nc=Af2r>0?(Nq-1)/Math.tan(Af2r):5.14;
+  const Ny=Af2r>0?2*(Nq+1)*Math.tan(Af2r):0;
+  
+  const Fcd=Bp_eff>0?1+0.4*(D/Bp_eff):1;
+  const Fqd=Bp_eff>0?1+2*Math.tan(Af2r)*(1-Math.sin(Af2r))**2*(D/Bp_eff):1;
+  const Fyd=1;
+  const Y=SFv>0?Math.atan((Ph+P_qsc_h)/SFv):0;
+  const Fci=(1-Y/(Math.PI/2))**2,Fqi=(1-Y/(Math.PI/2))**2;
+  const Fyi=Af2r>0?(1-Y/Af2r)**2:0;
+  const qu=C2*Nc*Fcd*Fci+P2*D*Nq*Fqd*Fqi+0.5*P2*Bp_eff*Ny*Fyd*Fyi;
+  const FSc=qpie>0?qu/qpie:Infinity;
+  
+  const SFv_u=F_D*(SFv_R+Pv)+F_L*P_qsc_v,SMr_u=F_D*(SMr_R+Pv*B)+F_L*P_qsc_v*Bm_st;
+  const Mo_u=F_D*Ph*(Hp/3)+F_L*P_qsc_h*(Hp/2);
+  const e_u=SFv_u>0?B/2-(SMr_u-Mo_u)/SFv_u:0;
+  const qpie_u=B>0?(SFv_u/B)*(1+6*e_u/B):0,qtalon_u=B>0?(SFv_u/B)*(1-6*e_u/B):0;
+  
+  let Kae=Ka,Ph_sis_total=0,Pv_sis_total=0,Delta_Ph=0,Delta_Pv=0,P_Iw=0,P_Is=0;
+  let FSvs=NaN,FSds=NaN,FScs=NaN,e_sis=0,qpie_sis=0,qtalon_sis=0,qu_sis=0;
+  let qpie_us=qpie_u,qtalon_us=qtalon_u;
+  let Pae=0,th_w=0,Mo_DPh=0,Mo_Iw=0,Mo_Is=0,Mo_tot=0;
+  
   if(Kh>0){
-    const theta_w_rad=Math.atan(Kh/(1-Kv));
-    const delta_kae_rad = method==='rankine' ? 0.0 : delta_wall_soil_rad;
-    const beta_vertical_kae_rad = method==='rankine' ? 0.0 : beta_from_vertical_rad;
-    let Kae_calc;
+    th_w=Math.atan(Kh/(1-Kv));
+    const d_kae=method==='rankine'?0:delta_rad;
+    const bv_kae=method==='rankine'?0:beta_vert_rad;
     try{
-      const num_Kae=Math.cos(Af1r-theta_w_rad-beta_vertical_kae_rad)**2;
-      const den1_Kae=Math.cos(theta_w_rad)*Math.cos(beta_vertical_kae_rad)**2*Math.cos(delta_kae_rad+beta_vertical_kae_rad+theta_w_rad);
-      const sqrt_num_s=Math.sin(Af1r+delta_kae_rad)*Math.sin(Af1r-theta_w_rad-alpha_rad);
-      const sqrt_den_s=Math.cos(delta_kae_rad+beta_vertical_kae_rad+theta_w_rad)*Math.cos(alpha_rad-beta_vertical_kae_rad);
-      if(den1_Kae<=0 || sqrt_den_s<=0 || (sqrt_num_s/sqrt_den_s)<0){ Kae_calc=Ka; }
-      else{ const den2_Kae=(1+Math.sqrt(sqrt_num_s/sqrt_den_s))**2; Kae_calc=num_Kae/(den1_Kae*den2_Kae); }
-    }catch(e){ Kae_calc=Ka; }
-    Kae=Kae_calc;
-
-    const Pae_seismic=0.5*P1*Hp**2*Kae*(1-Kv);
-    if(method==='rankine'){ Ph_seismic_total=Pae_seismic*Math.cos(alpha_rad); Pv_seismic_total=Pae_seismic*Math.sin(alpha_rad); }
-    else{ const ang=delta_wall_soil_rad+Math.PI/2-beta_from_horizontal_rad; Ph_seismic_total=Pae_seismic*Math.cos(ang); Pv_seismic_total=Pae_seismic*Math.sin(ang); }
-
-    Delta_Ph=Ph_seismic_total-Ph_estatico;
-    P_Iw=(P_tallo_rect+P_tallo_tri+P_zapata)*Kh;
-    P_Is=(P_suelo_talon+P_suelo_talud)*Kh;
-
-    const SFv_seismic_total=SFv_R+Pv_seismic_total, SMr_seismic_total=SMr_R+(Pv_seismic_total*B);
-    Mo_Delta_Ph=Delta_Ph*(0.6*Hp);
-    const CG_muro_y = H2>0 ? H3+H2/2 : H3;
-    Mo_Iw=P_Iw*CG_muro_y;
-    const CG_suelo_y = H2>0 ? H3+H2/2 : H3;
-    Mo_Is=P_Is*CG_suelo_y;
-    Mo_total_seismic=Mo_total_estatico+Mo_Delta_Ph+Mo_Iw+Mo_Is;
-    FSvolteo_seismic = Mo_total_seismic>0 ? SMr_seismic_total/Mo_total_seismic : Infinity;
-
-    const Ph_total_seismic_desl=Ph_estatico+P_qsc_h_estatico+Delta_Ph+P_Iw+P_Is;
-    FSdeslizamiento_seismic = Ph_total_seismic_desl>0 ? (SFv_seismic_total*Math.tan((2/3)*Af2r)+B*(2/3)*C2+Pp_estatico)/Ph_total_seismic_desl : Infinity;
-
-    e_seismic = SFv_seismic_total>0 ? B/2-(SMr_seismic_total-Mo_total_seismic)/SFv_seismic_total : 0;
-    qpie_seismic = B>0 ? (SFv_seismic_total/B)*(1+6*e_seismic/B) : 0;
-    qtalon_seismic = B>0 ? (SFv_seismic_total/B)*(1-6*e_seismic/B) : 0;
-    const Bp_eff_seismic=B-2*e_seismic;
-
-    const Fcd_s = Bp_eff_seismic>0 ? 1+0.4*(D/Bp_eff_seismic) : 1;
-    const Fqd_s = Bp_eff_seismic>0 ? 1+2*Math.tan(Af2r)*(1-Math.sin(Af2r))**2*(D/Bp_eff_seismic) : 1;
-    const Fyd_s = 1;
-    const Y_sis = SFv_seismic_total>0 ? Math.atan(Ph_total_seismic_desl/SFv_seismic_total) : 0;
-    const Fci_s=(1-Y_sis/(Math.PI/2))**2, Fqi_s=(1-Y_sis/(Math.PI/2))**2;
-    const Fyi_s = Af2r>0 ? (1-Y_sis/Af2r)**2 : 0;
-
-    qu_seismic = C2*Nc*Fcd_s*Fci_s + P2*D*Nq*Fqd_s*Fqi_s + 0.5*P2*Bp_eff_seismic*Ny*Fyd_s*Fyi_s;
-    FScarga_seismic = qpie_seismic>0 ? qu_seismic/qpie_seismic : Infinity;
-
-    const SFv_u_sismo=F_D_SISMO*(SFv_R+Pv_seismic_total), SMr_u_sismo=F_D_SISMO*(SMr_R+Pv_seismic_total*B);
-    const Mo_u_sismo=F_D_SISMO*Ph_estatico*(Hp/3)+F_L_SISMO*P_qsc_h_estatico*(Hp/2)+F_E_SISMO*(Mo_Delta_Ph+Mo_Iw+Mo_Is);
-    const e_u_sismo = SFv_u_sismo>0 ? B/2-(SMr_u_sismo-Mo_u_sismo)/SFv_u_sismo : 0;
-    qpie_u_sismo = B>0 ? (SFv_u_sismo/B)*(1+6*e_u_sismo/B) : 0;
-    qtalon_u_sismo = B>0 ? (SFv_u_sismo/B)*(1-6*e_u_sismo/B) : 0;
+      const num=Math.cos(Af1r-th_w-bv_kae)**2;
+      const d1=Math.cos(th_w)*Math.cos(bv_kae)**2*Math.cos(d_kae+bv_kae+th_w);
+      const sn=Math.sin(Af1r+d_kae)*Math.sin(Af1r-th_w-alpha_rad);
+      const sd=Math.cos(d_kae+bv_kae+th_w)*Math.cos(alpha_rad-bv_kae);
+      if(d1<=0||sd<=0||sn/sd<0)Kae=Ka;
+      else{const d2=(1+Math.sqrt(sn/sd))**2;Kae=num/(d1*d2);}
+    }catch(e){Kae=Ka;}
+    Pae=0.5*P1*Hp*Hp*Kae*(1-Kv);
+    if(method==='rankine'){Ph_sis_total=Pae*Math.cos(alpha_rad);Pv_sis_total=Pae*Math.sin(alpha_rad);}
+    else{Ph_sis_total=Pae*Math.cos(delta_rad+Math.PI/2-beta_horiz_rad);Pv_sis_total=Pae*Math.sin(delta_rad+Math.PI/2-beta_horiz_rad);}
+    Delta_Ph=Ph_sis_total-Ph;Delta_Pv=Pv_sis_total-Pv;
+    P_Iw=(P_tr+P_ttri+P_z)*Kh;P_Is=(P_st+P_stalud)*Kh;
+    const SFv_s=SFv_R+Pv_sis_total+P_qsc_v,SMr_s=SMr_R+Pv_sis_total*B+P_qsc_v*Bm_st;
+    Mo_DPh=Delta_Ph*0.6*Hp;
+    const CG_m=H3+H2/2;Mo_Iw=P_Iw*CG_m;Mo_Is=P_Is*CG_m;
+    Mo_tot=Mo+Mo_DPh+Mo_Iw+Mo_Is;
+    FSvs=Mo_tot>0?SMr_s/Mo_tot:Infinity;
+    const Ph_tot_d=Ph+P_qsc_h+Delta_Ph+P_Iw+P_Is;
+    FSds=Ph_tot_d>0?(SFv_s*Math.tan(2/3*Af2r)+B*B*2/3*C2+Pp)/Ph_tot_d:Infinity;
+    e_sis=SFv_s>0?B/2-(SMr_s-Mo_tot)/SFv_s:0;
+    qpie_sis=B>0?(SFv_s/B)*(1+6*e_sis/B):0;qtalon_sis=B>0?(SFv_s/B)*(1-6*e_sis/B):0;
+    const Bp_s=B-2*e_sis;
+    const Fcd_s=Bp_s>0?1+0.4*(D/Bp_s):1;
+    const Fqd_s=Bp_s>0?1+2*Math.tan(Af2r)*(1-Math.sin(Af2r))**2*(D/Bp_s):1;
+    const Y_s=SFv_s>0?Math.atan(Ph_tot_d/SFv_s):0;
+    const Fci_s=(1-Y_s/(Math.PI/2))**2,Fqi_s=(1-Y_s/(Math.PI/2))**2;
+    const Fyi_s=Af2r>0?(1-Y_s/Af2r)**2:0;
+    qu_sis=C2*Nc*Fcd_s*Fci_s+P2*D*Nq*Fqd_s*Fqi_s+0.5*P2*Bp_s*Ny*Fyd*Fyi_s;
+    FScs=qpie_sis>0?qu_sis/qpie_sis:Infinity;
+    const SFv_us=F_Ds*(SFv_R+Pv_sis_total)+F_Ls*P_qsc_v,SMr_us=F_Ds*(SMr_R+Pv_sis_total*B)+F_Ls*P_qsc_v*Bm_st;
+    const Mo_us=F_Ds*Ph*(Hp/3)+F_Ls*P_qsc_h*(Hp/2)+F_Es*(Mo_DPh+Mo_Iw+Mo_Is);
+    const e_us=SFv_us>0?B/2-(SMr_us-Mo_us)/SFv_us:0;
+    qpie_us=B>0?(SFv_us/B)*(1+6*e_us/B):0;qtalon_us=B>0?(SFv_us/B)*(1-6*e_us/B):0;
   }
-
-  const FS_capacidad_portante_ks = 3.0;
-  const q_admisible = qu_estatico/FS_capacidad_portante_ks;
-  const ks_kgf_m3 = q_admisible/0.0254;
-
-  return {
-    Hp, Ka, Kae, Ph_estatico, Pv_estatico, P_qsc_h_estatico,
-    FSvolteo_estatico, FSdeslizamiento_estatico, FScarga_estatico,
-    e_estatico, emax_estatico, qpie_estatico, qtalon_estatico, qu_estatico,
-    qpie_u, qtalon_u, Nq, Nc, Ny,
-    FSvolteo_seismic, FSdeslizamiento_seismic, FScarga_seismic,
-    e_seismic, qpie_seismic, qtalon_seismic, qu_seismic,
-    qpie_u_sismo, qtalon_u_sismo, emax_seismic:B/4,
-    ks_kgf_m3, q_admisible
-  };
+  
+  return {Ka,Kae,Ph,Pv,P_qsc_h,P_qsc_v,Hp,Pa_total,FSv,FSd,FSc,e,emax,qpie,qtalon,qu,
+    Bp_eff,Nq,Nc,Ny,Fcd,Fqd,Fyd,Y,Fci,Fqi,Fyi,
+    SFv,SMr,SFv_R,SMr_R,Mo,A_tr,A_ttri,P_tr,P_ttri,P_z,P_st,P_stalud,
+    Bm_tr,Bm_ttri,Bm_z,Bm_st,Bm_stalud,Dp,Kp,Kp_rankine,Kp_coulomb,Kp_coulomb_valido,delta_p_rad,beta_p_rad,Pp,
+    FSvs,FSds,FScs,e_sis,qpie_sis,qtalon_sis,qu_sis,
+    qpie_u,qtalon_u,qpie_u_sismo:qpie_us,qtalon_u_sismo:qtalon_us,
+    Ph_seismic_total:Ph_sis_total,P_Iw,P_Is,Pae,th_w,Mo_DPh,Mo_Iw,Mo_Is,Mo_tot,Delta_Ph,Delta_Pv,
+    SFv_u,SMr_u,Mo_u,e_u,
+    method,beta_vert_rad,beta_horiz_rad,delta_rad,Af1r,alpha_rad,Af2r};
 }
 
-/* ---------- Diseño de una sección de refuerzo ---------- */
-function disenoRefuerzo(Mu, Vu, b, h, recCm, fc, fy){
-  const phi_flexion=0.90, phi_corte=0.85, d=h-recCm;
-  const rho_min = (fc>0 && fy>0) ? Math.max(0.7*Math.sqrt(fc)/fy, 14/fy) : 0.0018;
-  const beta1 = fc>280 ? Math.max(0.85-0.05*((fc-280)/70.0), 0.65) : 0.85;
-  const rho_b = (fc>0 && fy>0) ? 0.85*beta1*(fc/fy)*(6000/(6000+fy)) : 0;
-  const rho_max = 0.75*rho_b;
-  const As_min = d>0 ? rho_min*b*d : 0;
-  const Vc = (d>0 && fc>0) ? 0.53*Math.sqrt(fc)*b*d : 0;
-  const phi_Vc = phi_corte*Vc;
-  const verifCorte = phi_Vc>=Vu ? 'Cumple' : `NO CUMPLE (ΦVc=${phi_Vc.toFixed(0)} kg < Vu=${Vu.toFixed(0)} kg)`;
-  const Mu_cm = Mu*100;
-  let term=1;
-  if(d>0 && Mu>0 && fc>0 && fy>0){
-    const Rn = Mu_cm/(phi_flexion*b*d**2);
-    term = Rn<=0.85*fc ? 1-(2*Rn)/(0.85*fc) : -1;
-  }
-  if(term<0){
-    return {estado:'INADECUADA', motivo:'Aumentar espesor (sección insuficiente)', Mu,Vu,d, As_req:null, As_min, As_final:null, phi_Vc, verifCorte, refuerzo:null};
-  }
-  const rho = (fc>0 && fy>0) ? (0.85*fc/fy)*(1-Math.sqrt(term)) : 0;
-  if(rho_max>0 && rho>rho_max){
-    return {estado:'INADECUADA', motivo:'Sección sobre-reforzada (no dúctil): aumentar espesor', Mu,Vu,d, As_req:null, As_min, As_final:null, phi_Vc, verifCorte, refuerzo:null};
-  }
-  const As_req = rho*b*d, As_final=Math.max(As_req, As_min);
-  const barras = {'1/2"':1.29,'5/8"':1.99,'3/4"':2.84,'1"':5.10};
+function disenoRefuerzo(Mu_kgm,Vu_kg,b_cm,h_cm,rec_cm,fc,fy){
+  const phi_f=0.9,phi_v=0.85,d=h_cm-rec_cm;
+  const rho_min=fc>0&&fy>0?Math.max(0.7*Math.sqrt(fc)/fy,14/fy):0.0018;
+  const beta1=fc>280?Math.max(0.85-0.05*((fc-280)/70),0.65):0.85;
+  const rho_b=fc>0&&fy>0?0.85*beta1*(fc/fy)*(6000/(6000+fy)):0;
+  const rho_max=0.75*rho_b;
+  const As_min=rho_min*b_cm*d;
+  const Vc=d>0&&fc>0?0.53*Math.sqrt(fc)*b_cm*d:0;
+  const phi_Vc=phi_v*Vc;
+  const verif_corte=phi_Vc>=Vu_kg?"Cumple":`NO CUMPLE (ΦVc=${phi_Vc.toFixed(1)} < Vu=${Vu_kg.toFixed(1)})`;
+  const Mu_cm=Mu_kgm*100;
+  if(d<=0||Mu_kgm<=0||fc<=0||fy<=0)return {estado:'INADECUADA',As_final:As_min,verif_corte,rho:0,Rn:0,As_min,As_req:0,Vc,phi_Vc,d,rho_min,rho_b,rho_max,beta1};
+  const Rn=Mu_cm/(phi_f*b_cm*d*d);
+  const term=1-(2*Rn)/(0.85*fc);
+  if(term<0)return {estado:'INADECUADA: Aumentar espesor',As_final:'Falla',verif_corte,rho:0,Rn,As_min,As_req:0,Vc,phi_Vc,d,rho_min,rho_b,rho_max,beta1};
+  const rho=(0.85*fc/fy)*(1-Math.sqrt(term));
+  if(rho>rho_max)return {estado:'SOBRE-REFORZADA',As_final:'Falla dúctil',verif_corte,rho,Rn,As_min,As_req:rho*b_cm*d,Vc,phi_Vc,d,rho_min,rho_b,rho_max,beta1};
+  const As_req=rho*b_cm*d;
+  const As_final=Math.max(As_req,As_min);
+  const barras={'1/2"':1.29,'5/8"':1.99,'3/4"':2.84,'1"':5.10};
   const opciones=[];
-  if(As_final>0){
-    for(const diam in barras){
-      const area=barras[diam];
-      const s_calc = (area*100)/As_final;
-      if(s_calc<=d && s_calc>=5) opciones.push(`Ø ${diam} @ ${s_calc.toFixed(2)} cm`);
-    }
+  for(const [diam,area] of Object.entries(barras)){
+    const s=(area*100)/As_final;
+    if(s<=d&&s>=5)opciones.push(`Ø${diam}@${s.toFixed(1)}cm`);
   }
-  return {estado:'OK', Mu, Vu, d, As_req, As_min, As_final, phi_Vc, verifCorte, refuerzo: opciones.length? opciones.join(' ó ') : 'Acero muy denso'};
+  return {estado:'OK',Mu:Mu_kgm,Vu:Vu_kg,d,As_req,As_min,As_final,verif_corte,
+    refuerzo:opciones.join(' ó ')||'Acero muy denso',rho,Rn,Vc,phi_Vc,rho_min,rho_b,rho_max,beta1};
 }
 
-/* ---------- Refuerzo completo: pantalla + zapata (talón / puntera) ---------- */
-function calcularRefuerzoCompleto(data, Ka, Kae, presiones){
+function calcRefuerzoCompleto(data,Ka,Kae,pres){
   const {H2,t_b,t_c,H1,P1,Pem,qsc,Kh,fc,fy,p_t:Bt,p_p:Bp,H3,Pes,B}=data;
-  const {qpie_u,qtalon_u,qpie_u_sismo,qtalon_u_sismo}=presiones;
-  const rec_muro=4.0, rec_zapata=7.5, b=100.0;
-  const F_D=F_D_CARGA, F_L=F_L_CARGA, F_Ds=F_D_SISMO, F_Ls=F_L_SISMO, F_E=F_E_SISMO;
+  const {qpie_u,qtalon_u,qpie_u_sismo,qtalon_u_sismo}=pres;
+  const rec_m=4,rec_z=7.5,b=100;
   const secciones=[];
-
-  const secciones_y = {"Base de la Pantalla":0, "Media Altura":H2/2.0, "A 2/3 de la Altura":H2*2.0/3.0};
-  for(const nombre in secciones_y){
-    if(H2<=0) continue;
-    const y=secciones_y[nombre];
-    const espesor = H2>0 ? t_b-(t_b-t_c)*y/H2 : t_b;
-    const h_act=H2-y, h_total=(H2-y)+H1;
-    const V_s=0.5*P1*h_total**2*Ka, M_s=V_s*(h_total/3.0);
-    const V_q=qsc*h_total*Ka, M_q=V_q*(h_total/2.0);
-    const Vu_e=F_D*V_s+F_L*V_q, Mu_e=F_D*M_s+F_L*M_q;
-    secciones.push({grupo:'Pantalla', seccion:nombre, y, caso:'Estática', resultado:disenoRefuerzo(Mu_e,Vu_e,b,espesor*100,rec_muro,fc,fy)});
+  const pts=[{n:'Base',y:0},{n:'Media',y:H2/2},{n:'2/3 H',y:H2*2/3}];
+  for(const p of pts){
+    const esp=t_b-(t_b-t_c)*p.y/H2;
+    const h_act=H2-p.y,h_tot=(H2-p.y)+H1;
+    const Vs=0.5*P1*h_tot*h_tot*Ka,Ms=Vs*(h_tot/3);
+    const Vq=qsc*h_tot*Ka,Mq=Vq*(h_tot/2);
+    const Vu_e=F_D*Vs+F_L*Vq,Mu_e=F_D*Ms+F_L*Mq;
+    secciones.push({grupo:'Pantalla',seccion:p.n,y:p.y,caso:'Estática',esp,
+      h_act,h_tot,Vs,Ms,Vq,Mq,Vu_e,Mu_e,
+      r:disenoRefuerzo(Mu_e,Vu_e,b,esp*100,rec_m,fc,fy)});
     if(Kh>0){
-      const V_si=0.5*P1*h_total**2*(Kae-Ka), M_si=V_si*(0.6*h_total);
-      const V_i=((t_c+espesor)/2.0*h_act*Pem)*Kh, M_i=V_i*(h_act/2.0);
-      const V_E=V_si+V_i, M_E=M_si+M_i;
-      const Vu_s1=F_Ds*V_s+F_Ls*V_q+F_E*V_E, Mu_s1=F_Ds*M_s+F_Ls*M_q+F_E*M_E;
-      const Vu_s2=0.9*V_s+F_E*V_E, Mu_s2=0.9*M_s+F_E*M_E;
-      secciones.push({grupo:'Pantalla', seccion:nombre, y, caso:'Sísmica', resultado:disenoRefuerzo(Math.max(Mu_s1,Mu_s2), Math.max(Vu_s1,Vu_s2), b, espesor*100, rec_muro, fc, fy)});
+      const Vsi=0.5*P1*h_tot*h_tot*(Kae-Ka),Msi=Vsi*0.6*h_tot;
+      const Vi=((t_c+esp)/2*h_act*Pem)*Kh,Mi=Vi*(h_act/2);
+      const VE=Vsi+Vi,ME=Msi+Mi;
+      const Vu1=F_Ds*Vs+F_Ls*Vq+F_Es*VE,Mu1=F_Ds*Ms+F_Ls*Mq+F_Es*ME;
+      const Vu2=0.9*Vs+F_Es*VE,Mu2=0.9*Ms+F_Es*ME;
+      secciones.push({grupo:'Pantalla',seccion:p.n,y:p.y,caso:'Sísmica',esp,
+        h_act,h_tot,Vsi,Msi,Vi,Mi,VE,ME,Vu1,Mu1,Vu2,Mu2,
+        r:disenoRefuerzo(Math.max(Mu1,Mu2),Math.max(Vu1,Vu2),b,esp*100,rec_m,fc,fy)});
     }
   }
-
-  // Talón
-  const W_suelo_t=Bt*H2*Pes, M_suelo_t=W_suelo_t*(Bt/2.0);
-  const W_qsc_t=Bt*qsc, M_qsc_t=W_qsc_t*(Bt/2.0);
-  const W_zap_t=Bt*H3*Pem, M_zap_t=W_zap_t*(Bt/2.0);
-  const x_cara_tallo=Bp+t_b;
-  const q_cara_t_e = B>0 ? qtalon_u+(qpie_u-qtalon_u)*(B-x_cara_tallo)/B : 0;
-  const V_reac_e=(q_cara_t_e+qtalon_u)/2.0*Bt;
-  const M_reac_e=(q_cara_t_e*Bt*Bt/2.0)+((qtalon_u-q_cara_t_e)*Bt/2.0)*(2.0*Bt/3.0);
-  const Vu_t_e=Math.abs((F_D*(W_suelo_t+W_zap_t)+F_L*W_qsc_t)-V_reac_e);
-  const Mu_t_e=Math.max((F_D*(M_suelo_t+M_zap_t)+F_L*M_qsc_t)-M_reac_e, 0);
-  secciones.push({grupo:'Zapata - Talón', seccion:`Talón (Ancho: ${Bt.toFixed(2)} m)`, caso:'Estática', resultado:disenoRefuerzo(Mu_t_e,Vu_t_e,b,H3*100,rec_zapata,fc,fy)});
+  const W_st=Bt*H2*Pes,M_st=W_st*(Bt/2);
+  const W_q=Bt*qsc,M_q=W_q*(Bt/2);
+  const W_z=Bt*H3*Pem,M_z=W_z*(Bt/2);
+  const xct=Bp+t_b;
+  const qct=B>0?qtalon_u+(qpie_u-qtalon_u)*(B-xct)/B:0;
+  const Vr=(qct+qtalon_u)/2*Bt,Mr=qct*Bt*Bt/2+(qtalon_u-qct)*Bt/2*(2*Bt/3);
+  const Vu_t=Math.abs(F_D*(W_st+W_z)+F_L*W_q-Vr);
+  const Mu_t=Math.max(F_D*(M_st+M_z)+F_L*M_q-Mr,0);
+  secciones.push({grupo:'Talón',seccion:`Talón (${Bt.toFixed(2)}m)`,caso:'Estática',
+    W_st,M_st,W_q,M_q,W_z,M_z,qct,Vr,Mr,Vu_t,Mu_t,
+    r:disenoRefuerzo(Mu_t,Vu_t,b,H3*100,rec_z,fc,fy)});
   if(Kh>0){
-    const q_cara_t_s = B>0 ? qtalon_u_sismo+(qpie_u_sismo-qtalon_u_sismo)*(B-x_cara_tallo)/B : 0;
-    const V_reac_s=(q_cara_t_s+qtalon_u_sismo)/2.0*Bt;
-    const M_reac_s=(q_cara_t_s*Bt*Bt/2.0)+((qtalon_u_sismo-q_cara_t_s)*Bt/2.0)*(2.0*Bt/3.0);
-    const Vu1=Math.abs((F_Ds*(W_suelo_t+W_zap_t)+F_Ls*W_qsc_t)-V_reac_s);
-    const Mu1=(F_Ds*(M_suelo_t+M_zap_t)+F_Ls*M_qsc_t)-M_reac_s;
-    const Vu2=Math.abs((0.9*(W_suelo_t+W_zap_t))-V_reac_s);
-    const Mu2=(0.9*(M_suelo_t+M_zap_t))-M_reac_s;
-    secciones.push({grupo:'Zapata - Talón', seccion:`Talón (Ancho: ${Bt.toFixed(2)} m)`, caso:'Sísmica', resultado:disenoRefuerzo(Math.max(Mu1,Mu2,0), Math.max(Vu1,Vu2), b, H3*100, rec_zapata, fc, fy)});
+    const qct_s=B>0?qtalon_u_sismo+(qpie_u_sismo-qtalon_u_sismo)*(B-xct)/B:0;
+    const Vr_s=(qct_s+qtalon_u_sismo)/2*Bt,Mr_s=qct_s*Bt*Bt/2+(qtalon_u_sismo-qct_s)*Bt/2*(2*Bt/3);
+    const Vu1=Math.abs(F_Ds*(W_st+W_z)+F_Ls*W_q-Vr_s),Mu1=F_Ds*(M_st+M_z)+F_Ls*M_q-Mr_s;
+    const Vu2=Math.abs(0.9*(W_st+W_z)-Vr_s),Mu2=0.9*(M_st+M_z)-Mr_s;
+    secciones.push({grupo:'Talón',seccion:`Talón (${Bt.toFixed(2)}m)`,caso:'Sísmica',
+      W_st,M_st,W_q,M_q,W_z,M_z,Vu1,Vu2,Mu1,Mu2,
+      r:disenoRefuerzo(Math.max(Mu1,Mu2,0),Math.max(Vu1,Vu2),b,H3*100,rec_z,fc,fy)});
   }
-
-  // Puntera
-  const W_zap_p=Bp*H3*Pem, M_zap_p=W_zap_p*(Bp/2.0);
-  const q_cara_p_e = B>0 ? qpie_u+(qtalon_u-qpie_u)*Bp/B : 0;
-  const V_reac_p_e=(q_cara_p_e+qpie_u)/2.0*Bp;
-  const M_reac_p_e=(qpie_u*Bp*Bp/2.0)+((q_cara_p_e-qpie_u)*Bp/2.0)*(Bp/3.0);
-  const Vu_p_e=Math.abs(V_reac_p_e-F_D*W_zap_p), Mu_p_e=Math.max(M_reac_p_e-F_D*M_zap_p, 0);
-  secciones.push({grupo:'Zapata - Puntera', seccion:`Puntera (Ancho: ${Bp.toFixed(2)} m)`, caso:'Estática', resultado:disenoRefuerzo(Mu_p_e,Vu_p_e,b,H3*100,rec_zapata,fc,fy)});
+  const W_zp=Bp*H3*Pem,M_zp=W_zp*(Bp/2);
+  const qcp=B>0?qpie_u+(qtalon_u-qpie_u)*Bp/B:0;
+  const Vrp=(qcp+qpie_u)/2*Bp,Mrp=qpie_u*Bp*Bp/2+(qcp-qpie_u)*Bp/2*(Bp/3);
+  const Vu_p=Math.abs(Vrp-F_D*W_zp),Mu_p=Math.max(Mrp-F_D*M_zp,0);
+  secciones.push({grupo:'Puntera',seccion:`Puntera (${Bp.toFixed(2)}m)`,caso:'Estática',
+    W_zp,M_zp,qcp,Vrp,Mrp,Vu_p,Mu_p,
+    r:disenoRefuerzo(Mu_p,Vu_p,b,H3*100,rec_z,fc,fy)});
   if(Kh>0){
-    const q_cara_p_s = B>0 ? qpie_u_sismo+(qtalon_u_sismo-qpie_u_sismo)*Bp/B : 0;
-    const V_reac_p_s=(q_cara_p_s+qpie_u_sismo)/2.0*Bp;
-    const M_reac_p_s=(qpie_u_sismo*Bp*Bp/2.0)+((q_cara_p_s-qpie_u_sismo)*Bp/2.0)*(Bp/3.0);
-    const Vu1=Math.abs(V_reac_p_s-F_Ds*W_zap_p), Mu1=M_reac_p_s-F_Ds*M_zap_p;
-    const Vu2=Math.abs(V_reac_p_s-0.9*W_zap_p), Mu2=M_reac_p_s-0.9*M_zap_p;
-    secciones.push({grupo:'Zapata - Puntera', seccion:`Puntera (Ancho: ${Bp.toFixed(2)} m)`, caso:'Sísmica', resultado:disenoRefuerzo(Math.max(Mu1,Mu2,0), Math.max(Vu1,Vu2), b, H3*100, rec_zapata, fc, fy)});
+    const qcp_s=B>0?qpie_u_sismo+(qtalon_u_sismo-qpie_u_sismo)*Bp/B:0;
+    const Vrp_s=(qcp_s+qpie_u_sismo)/2*Bp,Mrp_s=qpie_u_sismo*Bp*Bp/2+(qcp_s-qpie_u_sismo)*Bp/2*(Bp/3);
+    const Vu1=Math.abs(Vrp_s-F_Ds*W_zp),Mu1=Mrp_s-F_Ds*M_zp;
+    const Vu2=Math.abs(Vrp_s-0.9*W_zp),Mu2=Mrp_s-0.9*M_zp;
+    secciones.push({grupo:'Puntera',seccion:`Puntera (${Bp.toFixed(2)}m)`,caso:'Sísmica',
+      W_zp,M_zp,Vu1,Vu2,Mu1,Mu2,
+      r:disenoRefuerzo(Math.max(Mu1,Mu2,0),Math.max(Vu1,Vu2),b,H3*100,rec_z,fc,fy)});
   }
   return secciones;
 }
 
-/* ---------- Diagramas M/V a lo largo de la pantalla (misma fórmula que calcularRefuerzoCompleto) ---------- */
-function computeStemDiagram(data, Ka, Kae, nPts=25){
-  const {H2,t_b,t_c,H1,P1,Pem,qsc,Kh}=data;
-  const F_D=F_D_CARGA, F_L=F_L_CARGA, F_Ds=F_D_SISMO, F_Ls=F_L_SISMO, F_E=F_E_SISMO;
-  const out={y:[], Mu_est:[], Vu_est:[], Mu_sis:[], Vu_sis:[]};
-  if(H2<=0) return out;
-  for(let i=0;i<=nPts;i++){
-    const y = H2*i/nPts;
-    const espesor = t_b-(t_b-t_c)*y/H2;
-    const h_act=H2-y, h_total=h_act+H1;
-    const V_s=0.5*P1*h_total**2*Ka, M_s=V_s*(h_total/3.0);
-    const V_q=qsc*h_total*Ka, M_q=V_q*(h_total/2.0);
-    const Vu_e=F_D*V_s+F_L*V_q, Mu_e=F_D*M_s+F_L*M_q;
-    out.y.push(y); out.Mu_est.push(Mu_e); out.Vu_est.push(Vu_e);
-    if(Kh>0){
-      const V_si=0.5*P1*h_total**2*(Kae-Ka), M_si=V_si*(0.6*h_total);
-      const V_i=((t_c+espesor)/2.0*h_act*Pem)*Kh, M_i=V_i*(h_act/2.0);
-      const V_E=V_si+V_i, M_E=M_si+M_i;
-      const Vu_s1=F_Ds*V_s+F_Ls*V_q+F_E*V_E, Mu_s1=F_Ds*M_s+F_Ls*M_q+F_E*M_E;
-      const Vu_s2=0.9*V_s+F_E*V_E, Mu_s2=0.9*M_s+F_E*M_E;
-      out.Mu_sis.push(Math.max(Mu_s1,Mu_s2)); out.Vu_sis.push(Math.max(Vu_s1,Vu_s2));
-    } else { out.Mu_sis.push(null); out.Vu_sis.push(null); }
-  }
-  return out;
-}
-
-/* ---------- Diagramas M/V a lo largo de la zapata (puntera o talón), medidos desde la cara del tallo ----------
-   Generaliza las fórmulas de calcularRefuerzoCompleto (que solo evalúan en x=Bp o x=Bt) a cualquier corte x. */
-function computeFootingDiagram(data, presiones, tipo, nPts=25){
-  const {H2,H3,Pem,Pes,qsc}=data;
-  const F_D=F_D_CARGA, F_L=F_L_CARGA, F_Ds=F_D_SISMO, F_Ls=F_L_SISMO;
-  const {qpie_u,qtalon_u,qpie_u_sismo,qtalon_u_sismo}=presiones;
-  const out={x:[], Mu_est:[], Vu_est:[], Mu_sis:[], Vu_sis:[]};
-  const hasSismo = data.Kh>0;
-
-  if(tipo==='talon'){
-    const Bt=data.p_t, Bp=data.p_p, B=data.B;
-    const x_cara=Bp+data.t_b;
-    const q_cara_e = B>0 ? qtalon_u+(qpie_u-qtalon_u)*(B-x_cara)/B : 0;
-    const q_cara_s = B>0 ? qtalon_u_sismo+(qpie_u_sismo-qtalon_u_sismo)*(B-x_cara)/B : 0;
-    for(let i=0;i<=nPts;i++){
-      const x = Bt*i/nPts;
-      const W_suelo=x*H2*Pes, M_suelo=W_suelo*(x/2.0);
-      const W_qsc=x*qsc, M_qsc=W_qsc*(x/2.0);
-      const W_zap=x*H3*Pem, M_zap=W_zap*(x/2.0);
-      const q_e = Bt>0 ? q_cara_e+(qtalon_u-q_cara_e)*(x/Bt) : q_cara_e;
-      const V_reac_e=(q_cara_e+q_e)/2.0*x, M_reac_e=q_cara_e*x*x/2.0+(q_e-q_cara_e)*x*x/3.0;
-      out.x.push(x);
-      out.Vu_est.push(Math.abs((F_D*(W_suelo+W_zap)+F_L*W_qsc)-V_reac_e));
-      out.Mu_est.push(Math.max((F_D*(M_suelo+M_zap)+F_L*M_qsc)-M_reac_e, 0));
-      if(hasSismo){
-        const q_s = Bt>0 ? q_cara_s+(qtalon_u_sismo-q_cara_s)*(x/Bt) : q_cara_s;
-        const V_reac_s=(q_cara_s+q_s)/2.0*x, M_reac_s=q_cara_s*x*x/2.0+(q_s-q_cara_s)*x*x/3.0;
-        const Vu1=Math.abs((F_Ds*(W_suelo+W_zap)+F_Ls*W_qsc)-V_reac_s), Mu1=(F_Ds*(M_suelo+M_zap)+F_Ls*M_qsc)-M_reac_s;
-        const Vu2=Math.abs((0.9*(W_suelo+W_zap))-V_reac_s), Mu2=(0.9*(M_suelo+M_zap))-M_reac_s;
-        out.Vu_sis.push(Math.max(Vu1,Vu2)); out.Mu_sis.push(Math.max(Mu1,Mu2,0));
-      } else { out.Vu_sis.push(null); out.Mu_sis.push(null); }
-    }
-  } else { // puntera
-    const Bp=data.p_p, B=data.B;
-    const q_cara_e = B>0 ? qpie_u+(qtalon_u-qpie_u)*Bp/B : 0;
-    const q_cara_s = B>0 ? qpie_u_sismo+(qtalon_u_sismo-qpie_u_sismo)*Bp/B : 0;
-    for(let i=0;i<=nPts;i++){
-      const x = Bp*i/nPts;
-      const W_zap=x*H3*Pem, M_zap=W_zap*(x/2.0);
-      const q_x = Bp>0 ? qpie_u+(q_cara_e-qpie_u)*(x/Bp) : qpie_u;
-      const V_reac=(qpie_u+q_x)/2.0*x, M_reac=qpie_u*x*x/2.0+(q_x-qpie_u)*x*x/6.0;
-      out.x.push(x);
-      out.Vu_est.push(Math.abs(V_reac-F_D*W_zap));
-      out.Mu_est.push(Math.max(M_reac-F_D*M_zap, 0));
-      if(hasSismo){
-        const q_xs = Bp>0 ? qpie_u_sismo+(q_cara_s-qpie_u_sismo)*(x/Bp) : qpie_u_sismo;
-        const V_reac_s=(qpie_u_sismo+q_xs)/2.0*x, M_reac_s=qpie_u_sismo*x*x/2.0+(q_xs-qpie_u_sismo)*x*x/6.0;
-        const Vu1=Math.abs(V_reac_s-F_Ds*W_zap), Mu1=M_reac_s-F_Ds*M_zap;
-        const Vu2=Math.abs(V_reac_s-0.9*W_zap), Mu2=M_reac_s-0.9*M_zap;
-        out.Vu_sis.push(Math.max(Vu1,Vu2)); out.Mu_sis.push(Math.max(Mu1,Mu2,0));
-      } else { out.Vu_sis.push(null); out.Mu_sis.push(null); }
-    }
-  }
-  return out;
-}
-
-/* ======================================================================
-   RENDER
-   ====================================================================== */
-let currentMethod='rankine', chart=null;
-let stemMomentChartObj=null, stemShearChartObj=null, punteraChartObj=null, talonChartObj=null;
-
-function statusBadge(ok){
-  return ok===null ? '<span class="status na">N/D</span>' : (ok ? '<span class="status ok">✓ Cumple</span>' : '<span class="status bad">✕ No cumple</span>');
-}
-
-function renderStabilityTable(tbodyId, rows){
-  const tbody=document.querySelector(`#${tbodyId} tbody`);
-  tbody.innerHTML = rows.map(r=>`<tr><td>${r.label}</td><td>${r.value}</td><td>${r.limit}</td><td>${statusBadge(r.ok)}</td></tr>`).join('');
-}
-
-function renderWallSvg(data, res){
-  const {H2,H3,p_p,p_t,t_b,t_c,cara_vertical,Ai,H1,D,B}=data;
-  const svg=document.getElementById('wallSvg');
-  const W=760,H=560, margin=64;
-  const modelW = B, modelH = H3+H2+ (Ai>0? H1: 0) + D + 0.6;
-  const scale = Math.min((W-2*margin)/Math.max(modelW,1), (H-2*margin-40)/Math.max(modelH,1));
-  const originX = margin, originY = H-margin;
-  const toX = xm => originX + xm*scale;
-  const toY = ym => originY - ym*scale;
-
-  const zapata = `${toX(0)},${toY(0)} ${toX(B)},${toY(0)} ${toX(B)},${toY(H3)} ${toX(0)},${toY(H3)}`;
-  const tallo_base_x = p_p;
-  let talloPts;
-  if(cara_vertical==='interior') talloPts = [[tallo_base_x,H3],[tallo_base_x+t_b,H3],[tallo_base_x+t_b,H3+H2],[tallo_base_x+(t_b-t_c),H3+H2]];
-  else talloPts = [[tallo_base_x,H3],[tallo_base_x+t_b,H3],[tallo_base_x+t_c,H3+H2],[tallo_base_x,H3+H2]];
-  const talloStr = talloPts.map(p=>`${toX(p[0])},${toY(p[1])}`).join(' ');
-
-  const backTopX = talloPts[1][0];
-  const fillTopY = H3+H2;
-  const talonEndX = B;
-  let fillPts = [[backTopX,fillTopY],[talonEndX,fillTopY],[talonEndX,H3],[backTopX,H3]];
-  let taludLine='';
-  if(Ai>0){
-    const run = H1/Math.tan(toRad(Ai));
-    const x2=talonEndX+run, y2=fillTopY+H1;
-    taludLine = `<line x1="${toX(talonEndX)}" y1="${toY(fillTopY)}" x2="${toX(x2)}" y2="${toY(y2)}" stroke="#2E7D32" stroke-width="2.5"/>`;
-  }
-  const fillStr = fillPts.map(p=>`${toX(p[0])},${toY(p[1])}`).join(' ');
-
-  function dim(x1,y1,x2,y2,label, offsetLabel){
-    const midx=(x1+x2)/2, midy=(y1+y2)/2;
-    return `<g stroke="${'#1D5C9E'}" stroke-width="1" font-family="IBM Plex Mono, monospace">
-      <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-start="url(#tick)" marker-end="url(#tick)"/>
-      <text x="${midx}" y="${midy+(offsetLabel||-6)}" fill="#0F2A44" font-size="12" text-anchor="middle">${label}</text>
-    </g>`;
-  }
-
-  const groundY = toY(0)+ (D*scale*0); // frente
-  const groundFrontY = toY(0);
-
-  svg.innerHTML = `
-    <defs>
-      <marker id="tick" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M4,0 L4,8" stroke="#1D5C9E" stroke-width="1.4"/></marker>
-    </defs>
-    <polygon points="${zapata}" fill="#D8DEE6" stroke="#0F2A44" stroke-width="1.6"/>
-    <polygon points="${talloStr}" fill="#C2CBD6" stroke="#0F2A44" stroke-width="1.6"/>
-    <polygon points="${fillStr}" fill="#B7C79A" fill-opacity="0.55" stroke="none"/>
-    ${taludLine}
-    <line x1="${toX(-0.3)}" y1="${groundFrontY}" x2="${toX(B+0.3)}" y2="${groundFrontY}" stroke="#8D6E4A" stroke-width="2"/>
-    ${dim(toX(0),toY(-0.42),toX(B),toY(-0.42), `B = ${B.toFixed(2)} m`)}
-    ${dim(toX(B+0.55),toY(H3),toX(B+0.55),toY(H3+H2), `H2 = ${H2.toFixed(2)} m`, 4)}
-    ${dim(toX(-0.55),toY(0),toX(-0.55),toY(H3), `H3=${H3.toFixed(2)}`, 4)}
-    ${dim(toX(0),toY(H3+H2+0.35),toX(p_p),toY(H3+H2+0.35), `p_p=${p_p.toFixed(2)}`)}
-    ${dim(toX(B-p_t),toY(H3+H2+0.35),toX(B),toY(H3+H2+0.35), `p_t=${p_t.toFixed(2)}`)}
-    <text x="${toX(B/2)}" y="${toY(-0.9)}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#4C6478">Terreno frontal (D=${D.toFixed(2)} m)</text>
-  `;
-}
-
-function renderChart(res){
-  const ctx=document.getElementById('pressureChart');
-  const labels=['Talón','Pie'];
-  const dataEst=[res.qtalon_estatico, res.qpie_estatico];
-  const dataSis=[isFiniteNum(res.qtalon_seismic)?res.qtalon_seismic:res.qtalon_estatico, isFiniteNum(res.qpie_seismic)?res.qpie_seismic:res.qpie_estatico];
-  if(chart) chart.destroy();
-  chart = new Chart(ctx, {
-    type:'bar',
-    data:{ labels, datasets:[
-      {label:'Presión estática (kg/m²)', data:dataEst, backgroundColor:'#1D5C9E'},
-      {label:'Presión sísmica (kg/m²)', data:dataSis, backgroundColor:'#E1962A'}
-    ]},
-    options:{
-      responsive:true,
-      plugins:{legend:{labels:{font:{family:'IBM Plex Mono', size:11}}}},
-      scales:{
-        x:{ticks:{font:{family:'IBM Plex Mono'}}},
-        y:{ticks:{font:{family:'IBM Plex Mono'}}, title:{display:true, text:'kg/m²', font:{family:'IBM Plex Mono'}}}
-      }
-    }
-  });
-}
-
-function lineChartOpts(yLabel){
-  return {
-    responsive:true,
-    interaction:{mode:'index', intersect:false},
-    plugins:{legend:{labels:{font:{family:'IBM Plex Mono', size:10}}}},
-    scales:{
-      x:{ticks:{font:{family:'IBM Plex Mono', size:10}}, title:{display:true, text:'m', font:{family:'IBM Plex Mono', size:10}}},
-      y:{ticks:{font:{family:'IBM Plex Mono', size:10}}, title:{display:true, text:yLabel, font:{family:'IBM Plex Mono', size:10}}}
-    }
-  };
-}
-
-function renderStemCharts(data, res){
-  const diag = computeStemDiagram(data, res.Ka, res.Kae);
-  const labels = diag.y.map(v=>v.toFixed(2));
-
-  if(stemMomentChartObj) stemMomentChartObj.destroy();
-  stemMomentChartObj = new Chart(document.getElementById('stemMomentChart'), {
-    type:'line',
-    data:{labels, datasets:[
-      {label:'Mu estático', data:diag.Mu_est, borderColor:'#1D5C9E', backgroundColor:'#1D5C9E', pointRadius:0, borderWidth:2},
-      {label:'Mu sísmico', data:diag.Mu_sis, borderColor:'#E1962A', backgroundColor:'#E1962A', pointRadius:0, borderWidth:2, borderDash:[5,3]}
-    ]},
-    options: lineChartOpts('kg·m/m')
-  });
-
-  if(stemShearChartObj) stemShearChartObj.destroy();
-  stemShearChartObj = new Chart(document.getElementById('stemShearChart'), {
-    type:'line',
-    data:{labels, datasets:[
-      {label:'Vu estático', data:diag.Vu_est, borderColor:'#1D5C9E', backgroundColor:'#1D5C9E', pointRadius:0, borderWidth:2},
-      {label:'Vu sísmico', data:diag.Vu_sis, borderColor:'#E1962A', backgroundColor:'#E1962A', pointRadius:0, borderWidth:2, borderDash:[5,3]}
-    ]},
-    options: lineChartOpts('kg/m')
-  });
-}
-
-function renderFootingChart(canvasEl, prevObj, data, presiones, tipo){
-  const diag = computeFootingDiagram(data, presiones, tipo);
-  const labels = diag.x.map(v=>v.toFixed(2));
-  if(prevObj) prevObj.destroy();
-  return new Chart(canvasEl, {
-    type:'line',
-    data:{labels, datasets:[
-      {label:'Mu estático (kg·m/m)', data:diag.Mu_est, borderColor:'#1D5C9E', pointRadius:0, borderWidth:2, yAxisID:'yM'},
-      {label:'Mu sísmico (kg·m/m)', data:diag.Mu_sis, borderColor:'#E1962A', pointRadius:0, borderWidth:2, borderDash:[5,3], yAxisID:'yM'},
-      {label:'Vu estático (kg/m)', data:diag.Vu_est, borderColor:'#1E7D4F', pointRadius:0, borderWidth:1.5, yAxisID:'yV'},
-      {label:'Vu sísmico (kg/m)', data:diag.Vu_sis, borderColor:'#B5342A', pointRadius:0, borderWidth:1.5, borderDash:[5,3], yAxisID:'yV'}
-    ]},
-    options:{
-      responsive:true,
-      interaction:{mode:'index', intersect:false},
-      plugins:{legend:{labels:{font:{family:'IBM Plex Mono', size:9.5}}}},
-      scales:{
-        x:{ticks:{font:{family:'IBM Plex Mono', size:10}}, title:{display:true, text:'distancia desde la cara del tallo (m)', font:{family:'IBM Plex Mono', size:9.5}}},
-        yM:{position:'left', ticks:{font:{family:'IBM Plex Mono', size:9.5}}, title:{display:true, text:'Mu (kg·m/m)', font:{family:'IBM Plex Mono', size:9.5}}},
-        yV:{position:'right', grid:{drawOnChartArea:false}, ticks:{font:{family:'IBM Plex Mono', size:9.5}}, title:{display:true, text:'Vu (kg/m)', font:{family:'IBM Plex Mono', size:9.5}}}
-      }
-    }
-  });
-}
-
-function rebarCard(item){
-  const r=item.resultado;
-  const isSeismic = item.caso==='Sísmica';
-  const cls = isSeismic ? 'rebar-card seismic':'rebar-card';
-  if(r.estado==='INADECUADA'){
-    return `<div class="${cls}"><div class="rc-head"><span class="rc-title">${item.seccion}</span><span class="rc-case">${item.caso}</span></div>
-      <div class="rc-warn">⚠ ${r.motivo}</div>
-      <div class="rc-metrics"><div><span>Mu</span>${fmt(r.Mu,0)} kg·m/m</div><div><span>Vu</span>${fmt(r.Vu,0)} kg/m</div></div></div>`;
-  }
-  return `<div class="${cls}">
-    <div class="rc-head"><span class="rc-title">${item.seccion}</span><span class="rc-case">${item.caso}</span></div>
-    <div class="rc-metrics">
-      <div><span>Mu</span>${fmt(r.Mu,0)} kg·m/m</div>
-      <div><span>Vu</span>${fmt(r.Vu,0)} kg/m</div>
-      <div><span>d</span>${fmt(r.d,1)} cm</div>
-      <div><span>As final</span>${fmt(r.As_final,2)} cm²/m</div>
-    </div>
-    <div class="rc-bars">${r.refuerzo}</div>
-    <div style="margin-top:6px;">${statusBadge(r.verifCorte==='Cumple')} <span style="font-size:10.5px; color:var(--ink-soft); font-family:var(--mono);">corte</span></div>
-  </div>`;
-}
-
-function renderRebarGroup(containerId, title, items){
-  const el=document.getElementById(containerId);
-  el.innerHTML = `<div class="rebar-group"><h4>${title}</h4><div class="rebar-cards">${items.map(rebarCard).join('')}</div></div>`;
-}
-
-function renderAll(){
-  const data=getData();
-  document.getElementById('tbCara').textContent=data.cara_vertical;
-  const res=computeAnalysis(data, currentMethod);
-  document.getElementById('tbHp').textContent=`${fmt(res.Hp,2)} m`;
-  document.getElementById('tbB').textContent=`${fmt(data.B,2)} m`;
-  document.getElementById('tbMethod').textContent = currentMethod==='rankine'?'Rankine':'Coulomb';
-  document.getElementById('methodTagDraw').textContent = currentMethod.toUpperCase();
-
-  renderWallSvg(data, res);
-
-  renderStabilityTable('tableEst', [
-    {label:'Volteo', value:fmt(res.FSvolteo_estatico), limit:'≥ 1.50', ok: res.FSvolteo_estatico>=1.5},
-    {label:'Deslizamiento', value:fmt(res.FSdeslizamiento_estatico), limit:'≥ 1.50', ok: res.FSdeslizamiento_estatico>=1.5},
-    {label:'Capacidad de carga', value:fmt(res.FScarga_estatico), limit:'≥ 3.00', ok: res.FScarga_estatico>=3.0},
-    {label:'Excentricidad', value:`${fmt(res.e_estatico,3)} m`, limit:`≤ ${fmt(res.emax_estatico,3)} m (B/6)`, ok: Math.abs(res.e_estatico)<=res.emax_estatico},
-  ]);
-
-  const hasSismo = data.Kh>0;
-  renderStabilityTable('tableSis', hasSismo ? [
-    {label:'Volteo', value:fmt(res.FSvolteo_seismic), limit:'≥ 1.20', ok: res.FSvolteo_seismic>=1.2},
-    {label:'Deslizamiento', value:fmt(res.FSdeslizamiento_seismic), limit:'≥ 1.25', ok: res.FSdeslizamiento_seismic>=1.25},
-    {label:'Capacidad de carga', value:fmt(res.FScarga_seismic), limit:'≥ 2.00', ok: res.FScarga_seismic>=2.0},
-    {label:'Excentricidad', value:`${fmt(res.e_seismic,3)} m`, limit:`≤ ${fmt(res.emax_seismic,3)} m (B/4)`, ok: Math.abs(res.e_seismic)<=res.emax_seismic},
-  ] : [
-    {label:'Volteo', value:'—', limit:'Kh = 0', ok:null},
-    {label:'Deslizamiento', value:'—', limit:'Kh = 0', ok:null},
-    {label:'Capacidad de carga', value:'—', limit:'Kh = 0', ok:null},
-    {label:'Excentricidad', value:'—', limit:'Kh = 0', ok:null},
-  ]);
-
-  document.getElementById('fPieEst').textContent = fmt(res.qpie_estatico,0)+' kg/m²';
-  document.getElementById('fTalonEst').textContent = fmt(res.qtalon_estatico,0)+' kg/m²';
-  document.getElementById('fPieSis').textContent = hasSismo? fmt(res.qpie_seismic,0)+' kg/m²' : '—';
-  document.getElementById('fTalonSis').textContent = hasSismo? fmt(res.qtalon_seismic,0)+' kg/m²' : '—';
-  document.getElementById('fQuEst').textContent = fmt(res.qu_estatico,0)+' kg/m²';
-  document.getElementById('fQuSis').textContent = hasSismo? fmt(res.qu_seismic,0)+' kg/m²' : '—';
-  document.getElementById('fNfactors').textContent = `${fmt(res.Nq,2)} / ${fmt(res.Nc,2)} / ${fmt(res.Ny,2)}`;
-  document.getElementById('fKs').textContent = fmt(res.ks_kgf_m3,0)+' kg/m³';
-
-  renderChart(res);
-
-  const presiones = {qpie_u:res.qpie_u, qtalon_u:res.qtalon_u, qpie_u_sismo:res.qpie_u_sismo, qtalon_u_sismo:res.qtalon_u_sismo};
-  const secciones = calcularRefuerzoCompleto(data, res.Ka, res.Kae, presiones);
-
-  const pantallaNombres=[...new Set(secciones.filter(s=>s.grupo==='Pantalla').map(s=>s.seccion))];
-  document.getElementById('rebarPantalla').innerHTML = pantallaNombres.map((nombre,i)=>{
-    const items = secciones.filter(s=>s.grupo==='Pantalla' && s.seccion===nombre);
-    return `<div class="rebar-group"><h4><span class="idx">${i+1}</span> Pantalla — ${nombre}</h4><div class="rebar-cards">${items.map(rebarCard).join('')}</div></div>`;
-  }).join('');
-
-  const talon = secciones.filter(s=>s.grupo==='Zapata - Talón');
-  renderRebarGroup('rebarTalon', 'Zapata — Talón', talon);
-  const puntera = secciones.filter(s=>s.grupo==='Zapata - Puntera');
-  renderRebarGroup('rebarPuntera', 'Zapata — Puntera', puntera);
-
-  renderStemCharts(data, res);
-  punteraChartObj = renderFootingChart(document.getElementById('punteraChart'), punteraChartObj, data, presiones, 'puntera');
-  talonChartObj = renderFootingChart(document.getElementById('talonChart'), talonChartObj, data, presiones, 'talon');
-
-  // Estado global para el panel de exportación (cajetín + memoria de cálculo)
-  window.__lastData = data; window.__lastRes = res; window.__lastSecciones = secciones;
-  updatePrintTitleBlock();
-}
-
-/* ---------- Wiring ---------- */
-document.querySelectorAll('#inputPanel input, #inputPanel select').forEach(el=>{
-  el.addEventListener('input', renderAll);
-  el.addEventListener('change', renderAll);
-});
-
-document.getElementById('methodToggle').addEventListener('click', e=>{
-  const btn=e.target.closest('button'); if(!btn) return;
-  document.querySelectorAll('#methodToggle button').forEach(b=>b.classList.remove('active'));
+function switchTab(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
   btn.classList.add('active');
-  currentMethod=btn.dataset.method;
-  renderAll();
-});
-
-document.getElementById('btnDefaults').addEventListener('click', ()=>{
-  const defaults={H2:6.0,H3:0.7,D:1.5,D2:0.0,t_b:0.7,t_c:0.5,p_p:0.7,p_t:2.6,Ai:10.0,H1:0.458,P1:1800,Af1:30.0,C1:0,qsc:1000,P2:1900,Af2:20.0,C2:4000,Pem:2400,Pes:1800,Kh:0.15,fc:210,fy:4200};
-  for(const k in defaults) document.getElementById(k).value = defaults[k];
-  document.getElementById('cara_vertical').value='interior';
-  renderAll();
-});
-
-/* ---------- Cajetín / memoria de cálculo ---------- */
-function updatePrintTitleBlock(){
-  document.getElementById('pbProyecto').textContent = document.getElementById('mProyecto').value || '—';
-  document.getElementById('pbUbicacion').textContent = document.getElementById('mUbicacion').value || '—';
-  document.getElementById('pbElaborado').textContent = document.getElementById('mElaborado').value || '—';
-  document.getElementById('pbRevisado').textContent = document.getElementById('mRevisado').value || '—';
-  document.getElementById('pbMetodo').textContent = currentMethod==='rankine' ? 'Rankine' : 'Coulomb';
-  document.getElementById('pbFecha').textContent = new Date().toLocaleDateString('es-PE', {year:'numeric', month:'long', day:'numeric'});
+  if(id==='charts'||id==='fem'||id==='section')setTimeout(()=>{
+    Object.values(charts).forEach(c=>c&&c.resize&&c.resize());
+    if(id==='section')renderSection(getData());
+    if(id==='fem')renderFEMPanel();
+  },50);
 }
-['mProyecto','mUbicacion','mElaborado','mRevisado'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', updatePrintTitleBlock);
-});
 
-document.getElementById('btnPrint').addEventListener('click', ()=>{
-  updatePrintTitleBlock();
-  window.print();
-});
-
-function buildTxtReport(){
-  const data=window.__lastData, res=window.__lastRes, secciones=window.__lastSecciones;
-  if(!data) return '';
-  const hasSismo = data.Kh>0;
-  const L=[];
-  const line = ch => L.push(ch.repeat(85));
-  L.push('MEMORIA DE CÁLCULO — MURO DE CONTENCIÓN EN VOLADIZO');
-  line('=');
-  L.push(`Proyecto      : ${document.getElementById('mProyecto').value||'—'}`);
-  L.push(`Ubicación     : ${document.getElementById('mUbicacion').value||'—'}`);
-  L.push(`Elaborado por : ${document.getElementById('mElaborado').value||'—'}`);
-  L.push(`Revisado por  : ${document.getElementById('mRevisado').value||'—'}`);
-  L.push(`Fecha         : ${new Date().toLocaleDateString('es-PE')}`);
-  L.push(`Método empuje : ${currentMethod==='rankine'?'Rankine':'Coulomb'}`);
-  L.push('');
-  line('-'); L.push('1. DATOS DE ENTRADA'); line('-');
-  const campos = [
-    ['H2 — Altura pantalla (m)',data.H2],['H3 — Altura zapata (m)',data.H3],['D — Profundidad cimentación (m)',data.D],
-    ['D2 — Profundidad dentellón (m)',data.D2],['t_b — Espesor muro base (m)',data.t_b],['t_c — Espesor muro corona (m)',data.t_c],
-    ['p_p — Proyección pie (m)',data.p_p],['p_t — Proyección talón (m)',data.p_t],['B — Ancho zapata (m, derivado)',data.B],
-    ['Cara vertical del tallo',data.cara_vertical],['Ai — Ángulo terreno (°)',data.Ai],['H1 — Altura adicional talud (m)',data.H1],
-    ['P1 — Peso esp. relleno (kg/m³)',data.P1],['Af1 — Ángulo fricción relleno (°)',data.Af1],['C1 — Cohesión relleno (kg/m²)',data.C1],
-    ['qsc — Sobrecarga (kg/m²)',data.qsc],['P2 — Peso esp. cimentación (kg/m³)',data.P2],['Af2 — Ángulo fricción cimentación (°)',data.Af2],
-    ['C2 — Cohesión cimentación (kg/m²)',data.C2],['Pem — Peso esp. concreto (kg/m³)',data.Pem],['Pes — Peso esp. suelo sobre zapata (kg/m³)',data.Pes],
-    ["Kh — Coef. sísmico horizontal",data.Kh],["f'c (kg/cm²)",data.fc],['fy (kg/cm²)',data.fy]
-  ];
-  campos.forEach(([k,v])=>L.push(`  ${k.padEnd(42,'.')} ${typeof v==='number'?fmt(v,3):v}`));
-  L.push('');
-  line('-'); L.push('2. COEFICIENTES DE EMPUJE Y CAPACIDAD PORTANTE'); line('-');
-  L.push(`  Ka  = ${fmt(res.Ka,4)}      Kae = ${fmt(res.Kae,4)}`);
-  L.push(`  Nq  = ${fmt(res.Nq,3)}   Nc = ${fmt(res.Nc,3)}   Nγ = ${fmt(res.Ny,3)}`);
-  L.push(`  ks (coef. de balasto, qu/FS) = ${fmt(res.ks_kgf_m3,0)} kg/m³`);
-  L.push('');
-  line('-'); L.push('3. VERIFICACIONES DE ESTABILIDAD'); line('-');
-  L.push('  -- Estático --');
-  L.push(`  Volteo             : FS = ${fmt(res.FSvolteo_estatico)}   (req >= 1.50)  ${res.FSvolteo_estatico>=1.5?'CUMPLE':'NO CUMPLE'}`);
-  L.push(`  Deslizamiento       : FS = ${fmt(res.FSdeslizamiento_estatico)}   (req >= 1.50)  ${res.FSdeslizamiento_estatico>=1.5?'CUMPLE':'NO CUMPLE'}`);
-  L.push(`  Capacidad de carga  : FS = ${fmt(res.FScarga_estatico)}   (req >= 3.00)  ${res.FScarga_estatico>=3.0?'CUMPLE':'NO CUMPLE'}`);
-  L.push(`  Excentricidad       : e = ${fmt(res.e_estatico,3)} m (límite B/6 = ${fmt(res.emax_estatico,3)} m)  ${Math.abs(res.e_estatico)<=res.emax_estatico?'CUMPLE':'NO CUMPLE'}`);
-  L.push(`  q_pie = ${fmt(res.qpie_estatico,0)} kg/m²   q_talón = ${fmt(res.qtalon_estatico,0)} kg/m²   qu = ${fmt(res.qu_estatico,0)} kg/m²`);
-  if(hasSismo){
-    L.push('  -- Sísmico --');
-    L.push(`  Volteo             : FS = ${fmt(res.FSvolteo_seismic)}   (req >= 1.20)  ${res.FSvolteo_seismic>=1.2?'CUMPLE':'NO CUMPLE'}`);
-    L.push(`  Deslizamiento       : FS = ${fmt(res.FSdeslizamiento_seismic)}   (req >= 1.25)  ${res.FSdeslizamiento_seismic>=1.25?'CUMPLE':'NO CUMPLE'}`);
-    L.push(`  Capacidad de carga  : FS = ${fmt(res.FScarga_seismic)}   (req >= 2.00)  ${res.FScarga_seismic>=2.0?'CUMPLE':'NO CUMPLE'}`);
-    L.push(`  Excentricidad       : e = ${fmt(res.e_seismic,3)} m (límite B/4 = ${fmt(res.emax_seismic,3)} m)  ${Math.abs(res.e_seismic)<=res.emax_seismic?'CUMPLE':'NO CUMPLE'}`);
-    L.push(`  q_pie = ${fmt(res.qpie_seismic,0)} kg/m²   q_talón = ${fmt(res.qtalon_seismic,0)} kg/m²   qu = ${fmt(res.qu_seismic,0)} kg/m²`);
-  } else {
-    L.push('  -- Sísmico -- (Kh = 0, no aplica)');
+function loadDefaults(){
+  const defs={H2:6,H3:0.7,D:1.5,t_b:0.7,t_c:0.5,p_p:0.7,p_t:2.6,Ai:10,H1:0.458,D2:0,P1:1800,Af1:30,C1:0,P2:1900,Af2:20,C2:4000,Pem:2400,Pes:1800,qsc:1000,Kh:0.15,fc:210,fy:4200};
+  for(const[k,v]of Object.entries(defs)){
+    const el=document.querySelector(`[data-k="${k}"]`);
+    if(el)el.value=v;
   }
-  L.push('');
-  line('-'); L.push('4. DISEÑO DE REFUERZO (ACI / E.060)'); line('-');
-  const grupos = [...new Set(secciones.map(s=>`${s.grupo}|${s.seccion}`))];
-  grupos.forEach(key=>{
-    const [grupo,seccion]=key.split('|');
-    L.push(`  ${grupo} — ${seccion}`);
-    secciones.filter(s=>s.grupo===grupo && s.seccion===seccion).forEach(item=>{
-      const r=item.resultado;
-      L.push(`    [${item.caso}] Mu=${fmt(r.Mu,0)} kg·m/m  Vu=${fmt(r.Vu,0)} kg/m`);
-      if(r.estado==='INADECUADA'){
-        L.push(`      ESTADO: INADECUADA — ${r.motivo}`);
-      } else {
-        L.push(`      d=${fmt(r.d,1)} cm  As_req=${fmt(r.As_req,2)} cm²/m  As_min=${fmt(r.As_min,2)} cm²/m  As_final=${fmt(r.As_final,2)} cm²/m`);
-        L.push(`      Refuerzo: ${r.refuerzo}`);
-        L.push(`      Corte: ${r.verifCorte}`);
-      }
-    });
-    L.push('');
-  });
-  line('=');
-  L.push('Generado automáticamente por el dashboard interactivo — verificar antes de uso profesional.');
-  return L.join('\n');
+  document.querySelector('[data-k="cara_vertical"]').value='interior';
+  runAnalysis();
 }
 
-document.getElementById('btnTxt').addEventListener('click', ()=>{
-  const txt = buildTxtReport();
-  const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const proyecto = (document.getElementById('mProyecto').value||'memoria_muro').replace(/[^a-zA-Z0-9]+/g,'_');
-  a.href = url; a.download = `${proyecto}.txt`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+function runAnalysis(){
+  document.getElementById('statusText').textContent='Calculando...';
+  try{
+    const data=getData();
+    const R=geotech(data,'rankine'),C=geotech(data,'coulomb');
+    lastAnalysis={data,R,C};
+    renderVerifications(R,C,data);
+    renderGeo(R,C);
+    renderStruct(data,R,C);
+    renderCharts(data,R,C);
+    renderSection(data);
+    renderMemory(data,R,C);
+    if(document.getElementById('fem').classList.contains('active'))renderFEMPanel();
+    document.getElementById('statusText').textContent='✅ Actualizado en tiempo real';
+  }catch(e){
+    console.error('Error en análisis:',e);
+    document.getElementById('statusText').textContent='⚠️ Error: '+e.message;
+  }
+}
+
+function buildVerifTable(id,R,limits){
+  const tb=document.querySelector(`#${id} tbody`);
+  tb.innerHTML=[
+    ['Volteo',R.FSv,limits.FSv,`≥ ${limits.FSv}`],
+    ['Deslizamiento',R.FSd,limits.FSd,`≥ ${limits.FSd}`],
+    ['Capacidad Carga',R.FSc,limits.FSc,`≥ ${limits.FSc}`],
+    ['Excentricidad',R.e,limits.emax,`≤ ${limits.emax.toFixed(3)} m`]
+  ].map(r=>{
+    const ok=r[0]==='Excentricidad'?Math.abs(r[1])<=r[2]:r[1]>=r[2];
+    const val=r[0]==='Excentricidad'?r[1].toFixed(3)+' m':r[1].toFixed(2);
+    return `<tr><td>${r[0]}</td><td>${val}</td><td>${r[3]}</td><td><span class="badge ${ok?'ok':'fail'}">${ok?'✅ Cumple':'❌ No'}</span></td></tr>`;
+  }).join('');
+}
+
+function renderVerifications(R,C,data){
+  const limEst={FSv:1.5,FSd:1.5,FSc:3.0,emax:data.B/6};
+  // Las comprobaciones geotécnicas usan acciones de servicio. NTE E.050:
+  // FS mínimo 3.00 en estático y 2.50 para la solicitación máxima de sismo/viento.
+  const limSis={FSv:1.2,FSd:1.25,FSc:2.5,emax:data.B/4};
+  buildVerifTable('tblRankineEst',R,limEst);
+  buildVerifTable('tblCoulombEst',C,limEst);
+  buildVerifTable('tblRankineSis',{FSv:R.FSvs,FSd:R.FSds,FSc:R.FScs,e:R.e_sis},limSis);
+  buildVerifTable('tblCoulombSis',{FSv:C.FSvs,FSd:C.FSds,FSc:C.FScs,e:C.e_sis},limSis);
+  document.getElementById('ka_r').textContent=R.Ka.toFixed(3);
+  document.getElementById('ph_r').textContent=R.Ph.toFixed(1)+' kg/m';
+  document.getElementById('qpie_r').textContent=R.qpie.toFixed(1)+' kg/m²';
+  document.getElementById('qtalon_r').textContent=R.qtalon.toFixed(1)+' kg/m²';
+  document.getElementById('qu_r').textContent=R.qu.toFixed(1)+' kg/m²';
+  document.getElementById('ka_c').textContent=C.Ka.toFixed(3);
+  document.getElementById('ph_c').textContent=C.Ph.toFixed(1)+' kg/m';
+  document.getElementById('qpie_c').textContent=C.qpie.toFixed(1)+' kg/m²';
+  document.getElementById('qtalon_c').textContent=C.qtalon.toFixed(1)+' kg/m²';
+  document.getElementById('qu_c').textContent=C.qu.toFixed(1)+' kg/m²';
+  document.getElementById('kae_r').textContent=R.Kae.toFixed(3);
+  document.getElementById('ph_sis_r').textContent=(R.Ph_seismic_total||0).toFixed(1)+' kg/m';
+  document.getElementById('qpie_sis_r').textContent=R.qpie_sis.toFixed(1)+' kg/m²';
+  document.getElementById('qtalon_sis_r').textContent=R.qtalon_sis.toFixed(1)+' kg/m²';
+  document.getElementById('qu_sis_r').textContent=R.qu_sis.toFixed(1)+' kg/m²';
+  document.getElementById('fsc_sis_r').textContent=Number.isFinite(R.FScs)?R.FScs.toFixed(2):'No aplica';
+  document.getElementById('e_sis_r').textContent=Number.isFinite(R.e_sis)?R.e_sis.toFixed(3)+' m':'No aplica';
+  document.getElementById('kae_c').textContent=C.Kae.toFixed(3);
+  document.getElementById('ph_sis_c').textContent=(C.Ph_seismic_total||0).toFixed(1)+' kg/m';
+  document.getElementById('qpie_sis_c').textContent=C.qpie_sis.toFixed(1)+' kg/m²';
+  document.getElementById('qtalon_sis_c').textContent=C.qtalon_sis.toFixed(1)+' kg/m²';
+  document.getElementById('qu_sis_c').textContent=C.qu_sis.toFixed(1)+' kg/m²';
+  document.getElementById('fsc_sis_c').textContent=Number.isFinite(C.FScs)?C.FScs.toFixed(2):'No aplica';
+  document.getElementById('e_sis_c').textContent=Number.isFinite(C.e_sis)?C.e_sis.toFixed(3)+' m':'No aplica';
+}
+
+function renderGeo(R,C){
+  const html=r=>`
+    <div class="info-row"><span>Ka</span><span>${r.Ka.toFixed(3)}</span></div>
+    <div class="info-row"><span>Kae</span><span>${r.Kae.toFixed(3)}</span></div>
+    <div class="info-row"><span>Ph estático</span><span>${r.Ph.toFixed(1)} kg/m</span></div>
+    <div class="info-row"><span>Pv estático</span><span>${r.Pv.toFixed(1)} kg/m</span></div>
+    <div class="info-row"><span>P sobrecarga</span><span>${r.P_qsc_h.toFixed(1)} kg/m</span></div>
+    <div class="info-row"><span>Hp total</span><span>${r.Hp.toFixed(2)} m</span></div>
+    <div class="info-row"><span>FS Volteo</span><span>${r.FSv.toFixed(2)}</span></div>
+    <div class="info-row"><span>FS Desliz.</span><span>${r.FSd.toFixed(2)}</span></div>
+    <div class="info-row"><span>FS Carga</span><span>${r.FSc.toFixed(2)}</span></div>
+    <div class="info-row"><span>Excentricidad</span><span>${r.e.toFixed(3)} m</span></div>
+    <div class="info-row"><span>q_pie</span><span>${r.qpie.toFixed(1)} kg/m²</span></div>
+    <div class="info-row"><span>q_talón</span><span>${r.qtalon.toFixed(1)} kg/m²</span></div>
+    <div class="info-row"><span>q_última</span><span>${r.qu.toFixed(1)} kg/m²</span></div>`;
+  document.getElementById('geoRankine').innerHTML=html(R);
+  document.getElementById('geoCoulomb').innerHTML=html(C);
+}
+
+function renderStructBlock(containerId,data,R){
+  const pres={qpie_u:R.qpie_u,qtalon_u:R.qtalon_u,qpie_u_sismo:R.qpie_u_sismo,qtalon_u_sismo:R.qtalon_u_sismo};
+  const secs=calcRefuerzoCompleto(data,R.Ka,R.Kae,pres);
+  let html='';
+  const grupos={Pantalla:'🧱 Pantalla',Talón:'⬇️ Talón',Puntera:'⬇️ Puntera'};
+  for(const[g,label]of Object.entries(grupos)){
+    html+=`<div style="font-size:11px;font-weight:700;color:var(--muted);margin:8px 0 4px;text-transform:uppercase">${label}</div>`;
+    const gs=secs.filter(s=>s.grupo===g);
+    const seccs=[...new Set(gs.map(s=>s.seccion))];
+    for(const sec of seccs){
+      const casos=gs.filter(s=>s.seccion===sec);
+      html+=`<div class="struct-card"><div style="font-size:11px;font-weight:600;margin-bottom:4px">${sec}</div>`;
+      for(const c of casos){
+        const r=c.r;
+        html+=`<div style="margin:4px 0;padding:5px;background:rgba(0,0,0,0.2);border-radius:5px">
+          <div class="case-title">${c.caso}</div>
+          <div class="info-row"><span>Estado</span><span class="badge ${r.estado==='OK'?'ok':'fail'}">${r.estado}</span></div>
+          ${r.Mu?`<div class="info-row"><span>Mu</span><span>${r.Mu.toFixed(2)} kg-m/m</span></div>`:''}
+          ${typeof r.As_final==='number'?`<div class="info-row"><span>As</span><span>${r.As_final.toFixed(2)} cm²/m</span></div>`:''}
+          <div class="info-row"><span>Corte</span><span style="font-size:10px">${r.verif_corte}</span></div>
+          ${r.refuerzo?`<div class="info-row"><span>Refuerzo</span><span style="color:var(--accent);font-size:10px">${r.refuerzo}</span></div>`:''}
+        </div>`;
+      }
+      html+=`</div>`;
+    }
+  }
+  document.getElementById(containerId).innerHTML=html;
+}
+
+function renderStruct(data,R,C){
+  renderStructBlock('structRankine',data,R);
+  renderStructBlock('structCoulomb',data,C);
+}
+
+function drawChart(id,chartType,datasets,xl,yl){
+  const ctx=document.getElementById(id);
+  if(!ctx)return;
+  const styled=datasets.map(ds=>({...ds,pointRadius:0,pointHoverRadius:4,borderWidth:2.5,tension:0.35,fill:ds.fill||false}));
+  const config={type:chartType,data:{datasets:styled},options:{
+    responsive:true,maintainAspectRatio:false,animation:false,
+    interaction:{mode:'nearest',intersect:false},
+    plugins:{legend:{labels:{color:'#e5e7eb',font:{size:10},usePointStyle:false,boxWidth:20,boxHeight:2}},
+      tooltip:{backgroundColor:'rgba(10,14,26,0.95)',borderColor:'rgba(0,212,255,0.3)',borderWidth:1}},
+    scales:{
+      x:{type:'linear',ticks:{color:'#94a3b8',font:{size:9},maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.05)'},title:{display:true,text:xl,color:'#94a3b8',font:{size:10}}},
+      y:{type:'linear',ticks:{color:'#94a3b8',font:{size:9}},grid:{color:'rgba(255,255,255,0.05)'},title:{display:true,text:yl,color:'#94a3b8',font:{size:10}}}
+    }
+  }};
+  if(charts[id]){charts[id].data=config.data;charts[id].update('none');}
+  else{charts[id]=new Chart(ctx,config);}
+}
+
+function renderCharts(data,R,C){
+  const {H2,H1,H3,p_t:Bt,p_p:Bp,B,P1,qsc}=data;
+  const Hp=R.Hp;
+  const yArr=Array.from({length:40},(_,i)=>i*Hp/39);
+  const p_qsc_r=R.P_qsc_h/Hp,p_suelo_r=2*R.Ph/Hp;
+  const p_est_r=yArr.map(y=>p_qsc_r+p_suelo_r*(Hp-y)/Hp);
+  const p_qsc_c=C.P_qsc_h/Hp,p_suelo_c=2*C.Ph/Hp;
+  const p_est_c=yArr.map(y=>p_qsc_c+p_suelo_c*(Hp-y)/Hp);
+  drawChart('chartPresion','line',[
+    {label:'Rankine',data:p_est_r.map((v,i)=>({x:v,y:yArr[i]})),borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,0.15)',fill:true},
+    {label:'Coulomb',data:p_est_c.map((v,i)=>({x:v,y:yArr[i]})),borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',fill:true}
+  ],'Presión (kg/m²)','Altura (m)');
+  const yP=Array.from({length:40},(_,i)=>i*H2/39);
+  const V_r=[],V_c=[],M_r=[],M_c=[];
+  for(const y of yP){
+    const ha=H1+H2-y;
+    V_r.push({x:qsc*ha*R.Ka+0.5*P1*ha*ha*R.Ka,y:y});
+    M_r.push({x:qsc*ha*R.Ka*ha/2+0.5*P1*ha*ha*R.Ka*ha/3,y:y});
+    V_c.push({x:qsc*ha*C.Ka+0.5*P1*ha*ha*C.Ka,y:y});
+    M_c.push({x:qsc*ha*C.Ka*ha/2+0.5*P1*ha*ha*C.Ka*ha/3,y:y});
+  }
+  drawChart('chartVpantalla','line',[
+    {label:'Rankine',data:V_r,borderColor:'#00d4ff',fill:false},
+    {label:'Coulomb',data:V_c,borderColor:'#f59e0b',fill:false}
+  ],'Cortante (kg/m)','Altura (m)');
+  drawChart('chartMpantalla','line',[
+    {label:'Rankine',data:M_r,borderColor:'#00d4ff',fill:false},
+    {label:'Coulomb',data:M_c,borderColor:'#f59e0b',fill:false}
+  ],'Momento (kg-m/m)','Altura (m)');
+  const nSide=30;
+  const sPie=Array.from({length:nSide},(_,i)=>-Bp+Bp*i/(nSide-1));
+  const sTal=Array.from({length:nSide},(_,i)=>Bt*i/(nSide-1));
+  const sZ=[...sPie,...sTal];
+  const V_z_r=[],M_z_r=[],V_z_c=[],M_z_c=[];
+  for(const s of sZ){
+    let Vr_r=0,Mr_r=0,Vr_c=0,Mr_c=0,sign;
+    if(s<=0){
+      sign=-1;
+      const w=s+Bp;
+      const qw_r=R.qpie_u+(R.qtalon_u-R.qpie_u)*w/B;
+      const qw_c=C.qpie_u+(C.qtalon_u-C.qpie_u)*w/B;
+      const Vrr=(qw_r+R.qpie_u)/2*w,Mrr=R.qpie_u*w*w/2+(qw_r-R.qpie_u)*w/2*(w/3);
+      const Vrc=(qw_c+C.qpie_u)/2*w,Mrc=C.qpie_u*w*w/2+(qw_c-C.qpie_u)*w/2*(w/3);
+      const W=w*H3*data.Pem;
+      Vr_r=Math.abs(Vrr-F_D*W);Mr_r=Math.max(Mrr-F_D*W*(w/2),0);
+      Vr_c=Math.abs(Vrc-F_D*W);Mr_c=Math.max(Mrc-F_D*W*(w/2),0);
+    }else{
+      sign=1;
+      const w=Bt-s;
+      const qw_r=R.qpie_u+(R.qtalon_u-R.qpie_u)*(B-w)/B;
+      const qw_c=C.qpie_u+(C.qtalon_u-C.qpie_u)*(B-w)/B;
+      const Vrr=(qw_r+R.qtalon_u)/2*w,Mrr=qw_r*w*w/2+(R.qtalon_u-qw_r)*w/2*(2*w/3);
+      const Vrc=(qw_c+C.qtalon_u)/2*w,Mrc=qw_c*w*w/2+(C.qtalon_u-qw_c)*w/2*(2*w/3);
+      const Ws=w*H2*data.Pes,Wz=w*H3*data.Pem,Wq=w*qsc;
+      Vr_r=Math.abs(F_D*(Ws+Wz)+F_L*Wq-Vrr);Mr_r=Math.max(F_D*(Ws*(w/2)+Wz*(w/2))+F_L*Wq*(w/2)-Mrr,0);
+      Vr_c=Math.abs(F_D*(Ws+Wz)+F_L*Wq-Vrc);Mr_c=Math.max(F_D*(Ws*(w/2)+Wz*(w/2))+F_L*Wq*(w/2)-Mrc,0);
+    }
+    V_z_r.push({x:s,y:sign*Vr_r});M_z_r.push({x:s,y:sign*Mr_r});
+    V_z_c.push({x:s,y:sign*Vr_c});M_z_c.push({x:s,y:sign*Mr_c});
+  }
+  drawChart('chartVzapata','line',[
+    {label:'Rankine',data:V_z_r,borderColor:'#00d4ff',fill:true,backgroundColor:'rgba(0,212,255,0.12)'},
+    {label:'Coulomb',data:V_z_c,borderColor:'#f59e0b',fill:true,backgroundColor:'rgba(245,158,11,0.08)'}
+  ],'Distancia desde cara del tallo, m — Pie(−) / Talón(+)','Cortante (kg)');
+  drawChart('chartMzapata','line',[
+    {label:'Rankine',data:M_z_r,borderColor:'#00d4ff',fill:true,backgroundColor:'rgba(0,212,255,0.12)'},
+    {label:'Coulomb',data:M_z_c,borderColor:'#f59e0b',fill:true,backgroundColor:'rgba(245,158,11,0.08)'}
+  ],'Distancia desde cara del tallo, m — Pie(−) / Talón(+)','Momento (kg-m/m)');
+}
+
+function renderSection(data){
+  const {H2,H3,B,D,t_b,t_c,p_p,p_t,cara_vertical,Ai,H1}=data;
+  const canvas=document.getElementById('sectionCanvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;
+  const W=canvas.width,H=canvas.height;
+  ctx.fillStyle='#0a0e1a';ctx.fillRect(0,0,W,H);
+  const H_total=H1+H2+H3;
+  // El talud nace en la corona del tallo (x_fill_start) y sube hasta el borde del
+  // talón (x=B): el recorrido horizontal es Bt+sobreancho, NO se proyecta más allá
+  // del talón (antes se dibujaba de B a B+H1/tan(Ai), lo que no coincidía con la
+  // cuña de peso P_stalud calculada en geotech()).
+  const x_min=-0.5,x_max=B+0.8;
+  const y_min=-D-0.5,y_max=H_total+0.8;
+  const scale=Math.min((W-80)/(x_max-x_min),(H-80)/(y_max-y_min));
+  const ox=40-x_min*scale;
+  const oy=H-40+y_min*scale;
+  const tx=x=>ox+x*scale;
+  const ty=y=>oy-y*scale;
+  ctx.fillStyle='rgba(139,90,43,0.15)';
+  ctx.fillRect(tx(x_min),ty(D),tx(x_max)-tx(x_min),ty(-D-0.5)-ty(D));
+  ctx.strokeStyle='#8b5a2b';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(tx(x_min),ty(D));ctx.lineTo(tx(x_max),ty(D));ctx.stroke();
+  ctx.fillStyle='#9ca3af';ctx.strokeStyle='#1f2937';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.rect(tx(0),ty(H3),tx(B)-tx(0),ty(0)-ty(H3));ctx.fill();ctx.stroke();
+  let tallo_pts;
+  if(cara_vertical==='interior'){tallo_pts=[[p_p,0],[p_p+t_b,0],[p_p+t_b,H3+H2],[p_p+(t_b-t_c),H3+H2]];}
+  else{tallo_pts=[[p_p,0],[p_p+t_b,0],[p_p+t_c,H3+H2],[p_p,H3+H2]];}
+  ctx.fillStyle='#6b7280';
+  ctx.beginPath();ctx.moveTo(tx(tallo_pts[0][0]),ty(tallo_pts[0][1]));
+  for(let i=1;i<tallo_pts.length;i++)ctx.lineTo(tx(tallo_pts[i][0]),ty(tallo_pts[i][1]));
+  ctx.closePath();ctx.fill();ctx.stroke();
+  const x_fill_start=cara_vertical==='interior'?p_p+t_b:p_p+t_c;
+  ctx.fillStyle='rgba(107,142,35,0.5)';ctx.strokeStyle='#556b2f';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(tx(x_fill_start),ty(H3));ctx.lineTo(tx(B),ty(H3));ctx.lineTo(tx(B),ty(H3+H2));ctx.lineTo(tx(x_fill_start),ty(H3+H2));ctx.closePath();ctx.fill();ctx.stroke();
+  const run_talud=Ai>0?(B-x_fill_start):0;
+  if(Ai>0&&run_talud>0&&H1>0){
+    ctx.fillStyle='rgba(107,142,35,0.5)';
+    ctx.beginPath();ctx.moveTo(tx(x_fill_start),ty(H3+H2));ctx.lineTo(tx(B),ty(H3+H2));ctx.lineTo(tx(B),ty(H3+H2+H1));ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#228b22';ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(tx(x_fill_start),ty(H3+H2));ctx.lineTo(tx(B),ty(H3+H2+H1));ctx.stroke();
+    ctx.strokeStyle='#556b2f';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(tx(B),ty(H3+H2+H1));ctx.lineTo(tx(B+0.6),ty(H3+H2+H1));ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.strokeStyle='#228b22';ctx.lineWidth=2;
+  ctx.beginPath();
+  if(!(Ai>0&&run_talud>0&&H1>0)){ctx.moveTo(tx(x_fill_start),ty(H3+H2));ctx.lineTo(tx(B),ty(H3+H2));}
+  ctx.stroke();
+  ctx.fillStyle='#00d4ff';ctx.font='bold 11px Segoe UI';ctx.strokeStyle='#00d4ff';ctx.lineWidth=1;
+  drawDimension(ctx,tx(0),ty(-0.3),tx(B),ty(-0.3),`B = ${B.toFixed(2)} m`,-15);
+  drawDimension(ctx,tx(B+0.3),ty(0),tx(B+0.3),ty(H3),`H₃=${H3.toFixed(2)}m`,15);
+  drawDimension(ctx,tx(B+0.3),ty(H3),tx(B+0.3),ty(H3+H2),`H₂=${H2.toFixed(2)}m`,15);
+  if(H1>0)drawDimension(ctx,tx(B+0.3),ty(H3+H2),tx(B+0.3),ty(H3+H2+H1),`H₁=${H1.toFixed(2)}m`,15);
+  drawDimension(ctx,tx(p_p),ty(-0.7),tx(p_p+t_b),ty(-0.7),`t_b=${t_b.toFixed(2)}m`,-15);
+  drawDimension(ctx,tx(0),ty(-1.1),tx(p_p),ty(-1.1),`p_p=${p_p.toFixed(2)}m`,-15);
+  drawDimension(ctx,tx(p_p+t_b),ty(-1.1),tx(B),ty(-1.1),`p_t=${p_t.toFixed(2)}m`,-15);
+  const x_corona=cara_vertical==='interior'?p_p+(t_b-t_c):p_p;
+  drawDimension(ctx,tx(x_corona),ty(H3+H2+0.3),tx(x_corona+t_c),ty(H3+H2+0.3),`t_c=${t_c.toFixed(2)}m`,-12);
+  drawDimension(ctx,tx(-0.3),ty(0),tx(-0.3),ty(D),`D=${D.toFixed(2)}m`,15);
+  ctx.fillStyle='#e5e7eb';ctx.font='bold 12px Segoe UI';
+  ctx.fillText('ZAPATA',tx(B/2-0.4),ty(H3/2));
+  ctx.fillText('TALLO',tx((p_p+p_p+t_b)/2-0.3),ty(H3+H2/2));
+  ctx.fillStyle='#a3e635';ctx.fillText('RELLENO',tx((x_fill_start+B)/2-0.5),ty(H3+H2/2));
+  if(Ai>0&&run_talud>0){
+    ctx.strokeStyle='#fbbf24';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(tx(B),ty(H3+H2),25,Math.PI,Math.PI+Ai*Math.PI/180,false);ctx.stroke();
+    ctx.fillStyle='#fbbf24';ctx.font='bold 10px Segoe UI';
+    ctx.fillText(`Ai=${Ai}°`,tx(B)+30,ty(H3+H2)-5);
+  }
+  ctx.fillStyle='#00d4ff';ctx.font='bold 14px Segoe UI';
+  ctx.fillText('Sección Transversal del Muro de Contención',15,20);
+  ctx.fillStyle='#94a3b8';ctx.font='11px Segoe UI';
+  ctx.fillText(`Cara vertical: ${cara_vertical} | Método: Rankine & Coulomb`,15,38);
+  const area_zapata=B*H3;
+  const area_tallo=(t_c*H2)+(0.5*(t_b-t_c)*H2);
+  document.getElementById('dim_B').textContent=B.toFixed(2);
+  document.getElementById('dim_H').textContent=H_total.toFixed(2);
+  document.getElementById('dim_A').textContent=(area_zapata+area_tallo).toFixed(2);
+}
+
+function drawDimension(ctx,x1,y1,x2,y2,text,offset){
+  const horizontal=Math.abs(y1-y2)<1;
+  ctx.save();ctx.strokeStyle='#00d4ff';ctx.fillStyle='#00d4ff';ctx.lineWidth=0.8;ctx.setLineDash([3,2]);
+  if(horizontal){
+    const y=y1+offset;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1,y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x2,y1);ctx.lineTo(x2,y);ctx.stroke();
+    ctx.setLineDash([]);ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x1+5,y-2);ctx.lineTo(x1+5,y+2);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(x2,y);ctx.lineTo(x2-5,y-2);ctx.lineTo(x2-5,y+2);ctx.closePath();ctx.fill();
+    ctx.font='bold 10px Segoe UI';ctx.textAlign='center';ctx.fillText(text,(x1+x2)/2,y-4);
+  }else{
+    const x=x1+offset;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x,y1);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x1,y2);ctx.lineTo(x,y2);ctx.stroke();
+    ctx.setLineDash([]);ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,y2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x-2,y1-5);ctx.lineTo(x+2,y1-5);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(x,y2);ctx.lineTo(x-2,y2+5);ctx.lineTo(x+2,y2+5);ctx.closePath();ctx.fill();
+    ctx.save();ctx.translate(x-4,(y1+y2)/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';
+    ctx.font='bold 10px Segoe UI';ctx.fillText(text,0,0);ctx.restore();
+  }
+  ctx.restore();
+}
+
+// ============ FEM (elementos finitos, malla CST + resortes de Winkler) ============
+// Puerto directo del módulo FEM de muro 05.07.2026.py: misma malla (zapata en 3
+// franjas + tallo interpolado), mismo elemento CST de esfuerzo plano, mismos
+// resortes de Winkler en la base (ks=qu/0.0254) y el mismo empuje horizontal
+// aplicado en la cara posterior del tallo. Solo cambia el lenguaje de cálculo.
+function femLinspace(a,b,n){
+  if(n<=1)return [a];
+  const arr=new Array(n);
+  for(let i=0;i<n;i++)arr[i]=a+(b-a)*i/(n-1);
+  return arr;
+}
+function femRound6(x){return Math.round(x*1e6)/1e6;}
+
+function femGenerarMalla(data,meshParam){
+  const {H2,H3,B,p_p,t_b,t_c,cara_vertical}=data;
+  const xFrontBase=p_p,xBackBase=p_p+t_b;
+  let xFrontTop,xBackTop;
+  if(cara_vertical==='interior'){xFrontTop=p_p+(t_b-t_c);xBackTop=p_p+t_b;}
+  else{xFrontTop=p_p;xBackTop=p_p+t_c;}
+  const divYzapata=Math.max(2,Math.floor(H3*meshParam)+1);
+  const divYtallo=Math.max(2,Math.floor(H2*meshParam)+1);
+  const yZapata=femLinspace(0,H3,divYzapata);
+  const yTallo=femLinspace(H3,H3+H2,divYtallo);
+  const allNodes=new Map();
+  const nodes=[];
+  let nodeIdCounter=1;
+  const elementos=[];
+  function getNode(x,y){
+    const key=femRound6(x)+','+femRound6(y);
+    if(!allNodes.has(key)){
+      allNodes.set(key,nodeIdCounter);
+      nodes.push({id:nodeIdCounter,x:femRound6(x),y:femRound6(y)});
+      nodeIdCounter++;
+    }
+    return allNodes.get(key);
+  }
+  function meshRectangle(xStart,xEnd,yCoordsSection,storeTop){
+    let numDivX=Math.floor((xEnd-xStart)*meshParam)+1;
+    if(numDivX<=1)numDivX=2;
+    const xCoords=femLinspace(xStart,xEnd,numDivX);
+    const grid={};
+    for(let j=0;j<yCoordsSection.length;j++)for(let i=0;i<xCoords.length;i++)grid[i+'_'+j]=getNode(xCoords[i],yCoordsSection[j]);
+    let topIds=[];
+    if(storeTop){const jTop=yCoordsSection.length-1;for(let i=0;i<xCoords.length;i++)topIds.push(grid[i+'_'+jTop]);}
+    for(let j=0;j<yCoordsSection.length-1;j++)for(let i=0;i<xCoords.length-1;i++){
+      const n1=grid[i+'_'+j],n2=grid[(i+1)+'_'+j],n3=grid[i+'_'+(j+1)],n4=grid[(i+1)+'_'+(j+1)];
+      elementos.push([n1,n2,n4]);elementos.push([n1,n4,n3]);
+    }
+    return topIds;
+  }
+  meshRectangle(0,p_p,yZapata,false);
+  const baseNodesTalloIds=meshRectangle(p_p,p_p+t_b,yZapata,true);
+  if(B>p_p+t_b)meshRectangle(p_p+t_b,B,yZapata,false);
+  const numDivXTallo=baseNodesTalloIds.length;
+  const gridTallo={};
+  for(let i=0;i<baseNodesTalloIds.length;i++)gridTallo[i+'_0']=baseNodesTalloIds[i];
+  for(let j=1;j<yTallo.length;j++){
+    const y=yTallo[j];
+    const interp=H2>0?(y-H3)/H2:0;
+    const xStart=xFrontBase+(xFrontTop-xFrontBase)*interp,xEnd=xBackBase+(xBackTop-xBackBase)*interp;
+    const xCoords=femLinspace(xStart,xEnd,numDivXTallo);
+    for(let i=0;i<xCoords.length;i++)gridTallo[i+'_'+j]=getNode(xCoords[i],y);
+  }
+  for(let j=0;j<yTallo.length-1;j++)for(let i=0;i<numDivXTallo-1;i++){
+    const n1=gridTallo[i+'_'+j],n2=gridTallo[(i+1)+'_'+j],n3=gridTallo[i+'_'+(j+1)],n4=gridTallo[(i+1)+'_'+(j+1)];
+    elementos.push([n1,n2,n4]);elementos.push([n1,n4,n3]);
+  }
+  const nodesBase=nodes.filter(n=>Math.abs(n.y)<1e-6);
+  const perimetro=[[0,0],[B,0],[B,H3],[xBackBase,H3],[xBackTop,H3+H2],[xFrontTop,H3+H2],[xFrontBase,H3],[0,H3],[0,0]];
+  return {nodes,elementos,nodesBase,perimetro};
+}
+
+function femAplicarEmpuje(nodes,data,geo,loadCase){
+  let totalForce,Ka_eff;
+  if(loadCase==='seismic'){totalForce=geo.Ph_seismic_total||0;Ka_eff=geo.Kae;}
+  else{totalForce=geo.Ph+geo.P_qsc_h;Ka_eff=geo.Ka;}
+  totalForce=-totalForce;
+  const fx=new Array(nodes.length).fill(0);
+  const stemNodes=nodes.filter(n=>n.y>data.H3+1e-9);
+  if(stemNodes.length===0)return fx;
+  const byY=new Map();
+  for(const n of stemNodes){const yk=femRound6(n.y);if(!byY.has(yk)||n.x>byY.get(yk).x)byY.set(yk,n);}
+  const faceNodes=[...byY.values()];
+  if(faceNodes.length===0)return fx;
+  const {P1,qsc}=data,Htot=geo.Hp;
+  const pressures=faceNodes.map(n=>(qsc*Ka_eff)+(P1*(Htot-n.y)*Ka_eff));
+  const totalWeight=pressures.reduce((a,b)=>a+b,0);
+  faceNodes.forEach((n,idx)=>{
+    fx[n.id-1]=totalWeight>1e-9?totalForce*(pressures[idx]/totalWeight):totalForce/faceNodes.length;
+  });
+  return fx;
+}
+
+function femMatMul(A,B){
+  const n=A.length,m=B[0].length,k=B.length;
+  const R=Array.from({length:n},()=>new Array(m).fill(0));
+  for(let i=0;i<n;i++)for(let j=0;j<m;j++){let s=0;for(let l=0;l<k;l++)s+=A[i][l]*B[l][j];R[i][j]=s;}
+  return R;
+}
+function femTranspose(A){
+  const n=A.length,m=A[0].length;
+  const R=Array.from({length:m},()=>new Array(n));
+  for(let i=0;i<n;i++)for(let j=0;j<m;j++)R[j][i]=A[i][j];
+  return R;
+}
+function femPlaneStressC(E,v){
+  const k=E/(1-v*v);
+  return [[k,k*v,0],[k*v,k,0],[0,0,k*(1-v)/2]];
+}
+function femShapeBAndArea(p1,p2,p3){
+  const A=0.5*((p2[0]-p1[0])*(p3[1]-p1[1])-(p3[0]-p1[0])*(p2[1]-p1[1]));
+  if(Math.abs(A)<1e-12)return null;
+  const b1=p2[1]-p3[1],b2=p3[1]-p1[1],b3=p1[1]-p2[1];
+  const c1=p3[0]-p2[0],c2=p1[0]-p3[0],c3=p2[0]-p1[0];
+  const Bm=[[b1,0,b2,0,b3,0],[0,c1,0,c2,0,c3],[c1,b1,c2,b2,c3,b3]].map(row=>row.map(x=>x/(2*A)));
+  return {A,Bm};
+}
+function femMatrizRigidezElemento(E,v,th,p1,p2,p3){
+  const sh=femShapeBAndArea(p1,p2,p3);
+  if(!sh)return null;
+  const Cm=femPlaneStressC(E,v);
+  const CB=femMatMul(Cm,sh.Bm);
+  const BT=femTranspose(sh.Bm);
+  return femMatMul(BT,CB).map(row=>row.map(x=>x*th*sh.A));
+}
+function femCalcularEsfuerzosElemento(E,v,p1,p2,p3,dElem){
+  const sh=femShapeBAndArea(p1,p2,p3);
+  if(!sh)return [0,0,0];
+  const Cm=femPlaneStressC(E,v);
+  const strain=sh.Bm.map(row=>row.reduce((s,val,j)=>s+val*dElem[j],0));
+  return Cm.map(row=>row.reduce((s,val,j)=>s+val*strain[j],0));
+}
+function femSolveLinear(A,b){
+  const n=b.length;
+  for(let i=0;i<n;i++){
+    let maxRow=i,maxVal=Math.abs(A[i][i]);
+    for(let k=i+1;k<n;k++)if(Math.abs(A[k][i])>maxVal){maxVal=Math.abs(A[k][i]);maxRow=k;}
+    if(maxRow!==i){const t1=A[i];A[i]=A[maxRow];A[maxRow]=t1;const t2=b[i];b[i]=b[maxRow];b[maxRow]=t2;}
+    const piv=A[i][i];
+    if(Math.abs(piv)<1e-9)continue;
+    for(let k=i+1;k<n;k++){
+      const factor=A[k][i]/piv;
+      if(factor===0)continue;
+      for(let j=i;j<n;j++)A[k][j]-=factor*A[i][j];
+      b[k]-=factor*b[i];
+    }
+  }
+  const x=new Array(n).fill(0);
+  for(let i=n-1;i>=0;i--){
+    let s=b[i];
+    for(let j=i+1;j<n;j++)s-=A[i][j]*x[j];
+    x[i]=Math.abs(A[i][i])>1e-9?s/A[i][i]:0;
+  }
+  return x;
+}
+
+function resolverFEM(data,geo,meshParam,loadCase){
+  const E_kgf_cm2=15000*Math.sqrt(data.fc);
+  const E_kgf_m2=E_kgf_cm2*10000,v=0.2,th=1.0;
+  const {nodes,elementos,nodesBase,perimetro}=femGenerarMalla(data,meshParam);
+  const qu=geo.qu;
+  if(!qu||qu<=0)return null;
+  const NDOF=2*nodes.length;
+  if(NDOF>3000)return {error:'malla_demasiado_grande',ndof:NDOF};
+  const ks=qu/0.0254;
+  const fx=femAplicarEmpuje(nodes,data,geo,loadCase);
+  const K=Array.from({length:NDOF},()=>new Array(NDOF).fill(0));
+  for(const el of elementos){
+    const [i1,i2,i3]=el;
+    const p1n=nodes[i1-1],p2n=nodes[i2-1],p3n=nodes[i3-1];
+    const Ke=femMatrizRigidezElemento(E_kgf_m2,v,th,[p1n.x,p1n.y],[p2n.x,p2n.y],[p3n.x,p3n.y]);
+    if(!Ke)continue;
+    const dofMap=[2*(i1-1),2*(i1-1)+1,2*(i2-1),2*(i2-1)+1,2*(i3-1),2*(i3-1)+1];
+    for(let a=0;a<6;a++)for(let bb=0;bb<6;bb++)K[dofMap[a]][dofMap[bb]]+=Ke[a][bb];
+  }
+  const baseSorted=[...nodesBase].sort((a,b)=>a.x-b.x);
+  for(let i=0;i<baseSorted.length;i++){
+    const n=baseSorted[i];
+    let tribW;
+    if(baseSorted.length===1)tribW=0;
+    else if(i===0)tribW=(baseSorted[1].x-n.x)/2;
+    else if(i===baseSorted.length-1)tribW=(n.x-baseSorted[i-1].x)/2;
+    else tribW=(baseSorted[i+1].x-baseSorted[i-1].x)/2;
+    const dofY=2*(n.id-1)+1;
+    K[dofY][dofY]+=ks*tribW;
+  }
+  const Fv=new Array(NDOF).fill(0);
+  for(let i=0;i<nodes.length;i++)Fv[2*i]=fx[i];
+  let anchor=baseSorted[0];
+  for(const n of baseSorted)if(n.x<anchor.x)anchor=n;
+  const dofXAnchor=2*(anchor.id-1);
+  const free=[];
+  for(let i=0;i<NDOF;i++)if(i!==dofXAnchor)free.push(i);
+  const Kred=free.map(i=>free.map(j=>K[i][j]));
+  const Fred=free.map(i=>Fv[i]);
+  let dispFree;
+  try{dispFree=femSolveLinear(Kred,Fred);}catch(e){return null;}
+  const disp=new Array(NDOF).fill(0);
+  free.forEach((dof,idx)=>disp[dof]=dispFree[idx]);
+  const Sxx=new Array(elementos.length),Syy=new Array(elementos.length),Txy=new Array(elementos.length);
+  elementos.forEach((el,idx)=>{
+    const [i1,i2,i3]=el;
+    const p1n=nodes[i1-1],p2n=nodes[i2-1],p3n=nodes[i3-1];
+    const dElem=[disp[2*(i1-1)],disp[2*(i1-1)+1],disp[2*(i2-1)],disp[2*(i2-1)+1],disp[2*(i3-1)],disp[2*(i3-1)+1]];
+    const [sx,sy,txy]=femCalcularEsfuerzosElemento(E_kgf_m2,v,[p1n.x,p1n.y],[p2n.x,p2n.y],[p3n.x,p3n.y],dElem);
+    Sxx[idx]=sx;Syy[idx]=sy;Txy[idx]=txy;
+  });
+  return {nodes,elementos,nodesBase,perimetro,disp,Sxx,Syy,Txy,E_kgf_cm2,ks};
+}
+
+function femStressColor(val,maxAbs){
+  if(maxAbs<1e-9)maxAbs=1;
+  const t=Math.max(-1,Math.min(1,val/maxAbs));
+  if(t<0){const k=1+t;const c=Math.round(255*k);return `rgb(${c},${c},255)`;}
+  const k=1-t;const c=Math.round(255*k);return `rgb(255,${c},${c})`;
+}
+
+function femFitTransform(nodes,W,H,padPx,legendH){
+  const xs=nodes.map(n=>n.x),ys=nodes.map(n=>n.y);
+  const xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
+  const pad=0.4;
+  const scale=Math.min((W-2*padPx)/(((xmax-xmin)+2*pad)||1),(H-2*padPx-(legendH||0))/(((ymax-ymin)+2*pad)||1));
+  const ox=padPx-(xmin-pad)*scale;
+  const oy=(H-(legendH||0))-padPx+(ymin-pad)*scale;
+  return {tx:x=>ox+x*scale,ty:y=>oy-y*scale,scale};
+}
+
+function drawFEMMesh(result){
+  const canvas=document.getElementById('femMesh');
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;
+  const W=canvas.width,H=canvas.height;
+  ctx.fillStyle='#0a0e1a';ctx.fillRect(0,0,W,H);
+  const {nodes,elementos,perimetro,disp,nodesBase}=result;
+  const {tx,ty,scale}=femFitTransform(nodes,W,H,35,0);
+  const escalaInput=document.getElementById('femEscala');
+  let escala=parseFloat(escalaInput?.value)||200;
+  if(escalaInput&&escalaInput.dataset.auto){
+    const maxDisp=Math.max(1e-9,...disp.map(Math.abs));
+    const targetPx=Math.min(W,H)*0.12;
+    escala=Math.max(1,Math.round(targetPx/(maxDisp*scale)));
+    escalaInput.value=escala;
+  }
+  ctx.strokeStyle='rgba(148,163,184,0.4)';ctx.lineWidth=1;
+  ctx.beginPath();perimetro.forEach((p,i)=>i===0?ctx.moveTo(tx(p[0]),ty(p[1])):ctx.lineTo(tx(p[0]),ty(p[1])));ctx.stroke();
+  ctx.strokeStyle='rgba(0,212,255,0.7)';ctx.lineWidth=0.6;
+  for(const el of elementos){
+    const pts=el.map(id=>{const n=nodes[id-1];return [tx(n.x+disp[2*(id-1)]*escala),ty(n.y+disp[2*(id-1)+1]*escala)];});
+    ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);ctx.lineTo(pts[1][0],pts[1][1]);ctx.lineTo(pts[2][0],pts[2][1]);ctx.closePath();ctx.stroke();
+  }
+  ctx.fillStyle='#10b981';
+  for(const n of nodesBase){
+    const dx=disp[2*(n.id-1)]*escala,dy=disp[2*(n.id-1)+1]*escala;
+    ctx.beginPath();ctx.moveTo(tx(n.x+dx),ty(n.y+dy)+7);ctx.lineTo(tx(n.x+dx)-4,ty(n.y+dy)+13);ctx.lineTo(tx(n.x+dx)+4,ty(n.y+dy)+13);ctx.closePath();ctx.fill();
+  }
+  ctx.fillStyle='#94a3b8';ctx.font='10px Segoe UI';ctx.textAlign='left';
+  ctx.fillText(`Deformada × ${escala}  |  ▽ apoyo elástico (Winkler)`,10,16);
+}
+
+function drawFEMStress(result){
+  const canvas=document.getElementById('femSxx');
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;
+  const W=canvas.width,H=canvas.height;
+  ctx.fillStyle='#0a0e1a';ctx.fillRect(0,0,W,H);
+  const {nodes,elementos,perimetro,Sxx}=result;
+  const sxxCm2=Sxx.map(v=>v/10000);
+  const maxAbs=Math.max(1e-6,...sxxCm2.map(Math.abs));
+  const legendH=28;
+  const {tx,ty}=femFitTransform(nodes,W,H,30,legendH);
+  elementos.forEach((el,idx)=>{
+    const pts=el.map(id=>{const n=nodes[id-1];return [tx(n.x),ty(n.y)];});
+    ctx.fillStyle=femStressColor(sxxCm2[idx],maxAbs);
+    ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);ctx.lineTo(pts[1][0],pts[1][1]);ctx.lineTo(pts[2][0],pts[2][1]);ctx.closePath();ctx.fill();
+  });
+  ctx.strokeStyle='rgba(229,231,235,0.5)';ctx.lineWidth=1;
+  ctx.beginPath();perimetro.forEach((p,i)=>i===0?ctx.moveTo(tx(p[0]),ty(p[1])):ctx.lineTo(tx(p[0]),ty(p[1])));ctx.stroke();
+  const gx=20,gy=H-legendH+8,gw=W-40,gh=9;
+  const grad=ctx.createLinearGradient(gx,0,gx+gw,0);
+  grad.addColorStop(0,femStressColor(-maxAbs,maxAbs));grad.addColorStop(0.5,femStressColor(0,maxAbs));grad.addColorStop(1,femStressColor(maxAbs,maxAbs));
+  ctx.fillStyle=grad;ctx.fillRect(gx,gy,gw,gh);
+  ctx.fillStyle='#e5e7eb';ctx.font='9px Segoe UI';
+  ctx.textAlign='left';ctx.fillText(`Compresión ${(-maxAbs).toFixed(1)}`,gx,gy+gh+10);
+  ctx.textAlign='right';ctx.fillText(`Tensión +${maxAbs.toFixed(1)}`,gx+gw,gy+gh+10);
+  ctx.textAlign='center';ctx.fillText('Sxx (kg/cm²)',gx+gw/2,gy-3);
+}
+
+function updateFEMStats(result,data){
+  const {nodes,disp,Sxx}=result;
+  const Htot=data.H3+data.H2;
+  const ymax=Math.max(...nodes.map(n=>n.y));
+  const topNodes=nodes.filter(n=>n.y>Htot-1e-6).length?nodes.filter(n=>n.y>Htot-1e-6):nodes.filter(n=>Math.abs(n.y-ymax)<1e-6);
+  const corona=topNodes[Math.floor(topNodes.length/2)];
+  const dxCorona=disp[2*(corona.id-1)]*1000;
+  const baseNodesDy=nodes.filter(n=>Math.abs(n.y)<1e-6).map(n=>disp[2*(n.id-1)+1]*1000);
+  const dyMax=baseNodesDy.length?Math.min(...baseNodesDy):0;
+  const sxxCm2=Sxx.map(v=>v/10000);
+  const sxxMaxTension=Math.max(...sxxCm2);
+  document.getElementById('fem_dx').textContent=Math.abs(dxCorona).toFixed(3);
+  document.getElementById('fem_dy').textContent=Math.abs(dyMax).toFixed(3);
+  document.getElementById('fem_sxx').textContent=sxxMaxTension.toFixed(2);
+}
+
+function renderFEMPanel(){
+  if(!lastAnalysis)return;
+  const {data,R,C}=lastAnalysis;
+  const method=document.getElementById('femMethod')?.value||'rankine';
+  const loadCase=document.getElementById('femCase')?.value||'static';
+  const meshParam=Math.max(0.5,Math.min(8,parseFloat(document.getElementById('femMeshParam')?.value)||3));
+  const geo=method==='rankine'?R:C;
+  const statusEl=document.getElementById('femStatus');
+  if(statusEl)statusEl.textContent='Calculando malla y ensamblando modelo...';
+  setTimeout(()=>{
+    const t0=performance.now();
+    const result=resolverFEM(data,geo,meshParam,loadCase);
+    if(!result){if(statusEl)statusEl.textContent='⚠️ No se pudo resolver el modelo (qu=0 o matriz singular).';return;}
+    if(result.error){if(statusEl)statusEl.textContent=`⚠️ Malla demasiado densa (${result.ndof} GDL) para resolver en el navegador — reduce la densidad de malla.`;return;}
+    const dt=(performance.now()-t0).toFixed(0);
+    if(statusEl)statusEl.textContent=`✅ ${result.nodes.length} nudos, ${result.elementos.length} elementos | ks=${result.ks.toFixed(0)} kg/m³ | E=${result.E_kgf_cm2.toFixed(0)} kg/cm² | resuelto en ${dt} ms`;
+    drawFEMMesh(result);
+    drawFEMStress(result);
+    updateFEMStats(result,data);
+  },10);
+}
+document.getElementById('femMethod')?.addEventListener('change',renderFEMPanel);
+document.getElementById('femCase')?.addEventListener('change',renderFEMPanel);
+document.getElementById('femMeshParam')?.addEventListener('change',renderFEMPanel);
+document.getElementById('femEscala')?.addEventListener('input',function(){this.dataset.auto='';renderFEMPanel();});
+
+// ============ MEMORIA DE CÁLCULO ============
+function fmt(v,d=4){if(v===undefined||v===null||isNaN(v))return '—';if(!isFinite(v))return '∞';return Number(v).toFixed(d);}
+
+// NUEVA FUNCIÓN: Genera HTML detallado del diseño de refuerzo para la memoria
+function renderStructMemoryBlock(secs,d,method,Ka,Kae,qtalonU){
+  let html='';
+  const grupos=[
+    {key:'Pantalla',label:'PANTALLA (TALLO)'},
+    {key:'Talón',label:'ZAPATA - TALÓN'},
+    {key:'Puntera',label:'ZAPATA - PUNTERA'}
+  ];
+  
+  for(const g of grupos){
+    const secs_g=secs.filter(s=>s.grupo===g.key);
+    if(secs_g.length===0)continue;
+    
+    html+=`<div class="mem-subsection"><h4>${g.label}</h4>`;
+    
+    const seccs=[...new Set(secs_g.map(s=>s.seccion))];
+    for(const sec of seccs){
+      const casos=secs_g.filter(s=>s.seccion===sec);
+      for(const c of casos){
+        const r=c.r;
+        const rec=c.grupo==='Pantalla'?4.0:7.5;
+        const h_cm=c.esp*100;
+        
+        html+=`<div class="mem-caso">
+          <div class="mem-caso-title">📍 ${sec} — Combinación ${c.caso}</div>`;
+        
+        // Geometría de la sección
+        html+=`<div class="mem-concept">Geometría de la sección de diseño</div>`;
+        html+=`<div class="mem-formula">b = 100 cm (ancho unitario de diseño)
+h = ${fmt(h_cm,2)} cm (espesor de la sección)
+rec = ${fmt(rec,1)} cm (recubrimiento mecánico)
+d = h − rec = ${fmt(h_cm,2)} − ${fmt(rec,1)}</div>`;
+        html+=`<div class="mem-result">d = ${fmt(r.d,2)} cm (peralte efectivo)</div>`;
+        
+        // Cálculo de solicitaciones
+        if(c.grupo==='Pantalla'){
+          html+=`<div class="mem-concept">Solicitaciones por empuje del terreno (altura activa = H₁ + H₂ − y)</div>`;
+          html+=`<div class="mem-formula">h_act = H₂ − y = ${fmt(d.H2,3)} − ${fmt(c.y,3)} = ${fmt(c.h_act,3)} m
+h_total = h_act + H₁ = ${fmt(c.h_act,3)} + ${fmt(d.H1,3)} = ${fmt(c.h_tot,3)} m</div>`;
+          
+          html+=`<div class="mem-concept">Empuje por peso del suelo (triangular)</div>`;
+          html+=`<div class="mem-formula">Vs = 0.5 × γ₁ × h_total² × Ka
+   = 0.5 × ${fmt(d.P1,1)} × ${fmt(c.h_tot,3)}² × ${fmt(Ka,5)}</div>`;
+          html+=`<div class="mem-result">Vs = ${fmt(c.Vs,2)} kg/m</div>`;
+          html+=`<div class="mem-formula">Ms = Vs × (h_total/3) = ${fmt(c.Vs,2)} × ${fmt(c.h_tot/3,3)}</div>`;
+          html+=`<div class="mem-result">Ms = ${fmt(c.Ms,2)} kg-m/m</div>`;
+          
+          html+=`<div class="mem-concept">Empuje por sobrecarga (uniforme)</div>`;
+          html+=`<div class="mem-formula">Vq = qsc × h_total × Ka = ${fmt(d.qsc,1)} × ${fmt(c.h_tot,3)} × ${fmt(Ka,5)}</div>`;
+          html+=`<div class="mem-result">Vq = ${fmt(c.Vq,2)} kg/m</div>`;
+          html+=`<div class="mem-formula">Mq = Vq × (h_total/2) = ${fmt(c.Vq,2)} × ${fmt(c.h_tot/2,3)}</div>`;
+          html+=`<div class="mem-result">Mq = ${fmt(c.Mq,2)} kg-m/m</div>`;
+          
+          if(c.caso==='Estática'){
+            html+=`<div class="mem-concept">Combinación factorada: U = 1.4D + 1.7L</div>`;
+            html+=`<div class="mem-formula">Vu = 1.4×Vs + 1.7×Vq = 1.4×${fmt(c.Vs,2)} + 1.7×${fmt(c.Vq,2)}</div>`;
+            html+=`<div class="mem-result">Vu = ${fmt(c.Vu_e,2)} kg/m</div>`;
+            html+=`<div class="mem-formula">Mu = 1.4×Ms + 1.7×Mq = 1.4×${fmt(c.Ms,2)} + 1.7×${fmt(c.Mq,2)}</div>`;
+            html+=`<div class="mem-result">Mu = ${fmt(c.Mu_e,2)} kg-m/m</div>`;
+          }else if(c.caso==='Sísmica'){
+            html+=`<div class="mem-concept">Incremento sísmico del empuje (ΔKa = Kae − Ka)</div>`;
+            html+=`<div class="mem-formula">Vsi = 0.5 × γ₁ × h_total² × (Kae − Ka)
+    = 0.5 × ${fmt(d.P1,1)} × ${fmt(c.h_tot,3)}² × (${fmt(Kae,5)} − ${fmt(Ka,5)})</div>`;
+            html+=`<div class="mem-result">Vsi = ${fmt(c.Vsi,2)} kg/m</div>`;
+            html+=`<div class="mem-formula">Msi = Vsi × 0.6×h_total = ${fmt(c.Vsi,2)} × ${fmt(0.6*c.h_tot,3)}</div>`;
+            html+=`<div class="mem-result">Msi = ${fmt(c.Msi,2)} kg-m/m</div>`;
+            
+            html+=`<div class="mem-concept">Inercia del muro (fuerza horizontal por sismo)</div>`;
+            html+=`<div class="mem-formula">Vi = [(t_c+esp)/2 × h_act × γ_conc] × Kh
+   = [(${fmt(d.t_c,3)}+${fmt(c.esp,3)})/2 × ${fmt(c.h_act,3)} × ${fmt(d.Pem,1)}] × ${fmt(d.Kh,3)}</div>`;
+            html+=`<div class="mem-result">Vi = ${fmt(c.Vi,2)} kg/m</div>`;
+            html+=`<div class="mem-formula">Mi = Vi × (h_act/2) = ${fmt(c.Vi,2)} × ${fmt(c.h_act/2,3)}</div>`;
+            html+=`<div class="mem-result">Mi = ${fmt(c.Mi,2)} kg-m/m</div>`;
+            
+            html+=`<div class="mem-formula">VE = Vsi + Vi = ${fmt(c.Vsi,2)} + ${fmt(c.Vi,2)} = ${fmt(c.VE,2)} kg/m
+ME = Msi + Mi = ${fmt(c.Msi,2)} + ${fmt(c.Mi,2)} = ${fmt(c.ME,2)} kg-m/m</div>`;
+            
+            html+=`<div class="mem-concept">Combinaciones sísmicas (ACI 318 / E.060)</div>`;
+            html+=`<div class="mem-formula">C1: U = 1.2D + 1.0L + 1.0E
+Vu₁ = 1.2×Vs + 1.0×Vq + 1.0×VE = ${fmt(c.Vu1,2)} kg/m
+Mu₁ = 1.2×Ms + 1.0×Mq + 1.0×ME = ${fmt(c.Mu1,2)} kg-m/m
+
+C2: U = 0.9D + 1.0E  (descarga)
+Vu₂ = 0.9×Vs + 1.0×VE = ${fmt(c.Vu2,2)} kg/m
+Mu₂ = 0.9×Ms + 1.0×ME = ${fmt(c.Mu2,2)} kg-m/m</div>`;
+            html+=`<div class="mem-result">Vu = max(Vu₁, Vu₂) = ${fmt(Math.max(c.Vu1,c.Vu2),2)} kg/m
+Mu = max(Mu₁, Mu₂) = ${fmt(Math.max(c.Mu1,c.Mu2),2)} kg-m/m</div>`;
+          }
+        }else if(c.grupo==='Talón'){
+          html+=`<div class="mem-concept">Cargas descendentes sobre el voladizo del talón</div>`;
+          html+=`<div class="mem-formula">W_suelo = p_t × H₂ × γ_suelo = ${fmt(d.p_t,3)} × ${fmt(d.H2,3)} × ${fmt(d.Pes,1)}</div>`;
+          html+=`<div class="mem-result">W_suelo = ${fmt(c.W_st,2)} kg/m</div>`;
+          html+=`<div class="mem-formula">W_zapata = p_t × H₃ × γ_conc = ${fmt(d.p_t,3)} × ${fmt(d.H3,3)} × ${fmt(d.Pem,1)}</div>`;
+          html+=`<div class="mem-result">W_zapata = ${fmt(c.W_z,2)} kg/m</div>`;
+          html+=`<div class="mem-formula">W_qsc = p_t × qsc = ${fmt(d.p_t,3)} × ${fmt(d.qsc,1)}</div>`;
+          html+=`<div class="mem-result">W_qsc = ${fmt(c.W_q,2)} kg/m</div>`;
+          
+          html+=`<div class="mem-concept">Presión de contacto en la cara del tallo</div>`;
+          html+=`<div class="mem-result">q_cara_tallo = ${fmt(c.qct,2)} kg/m²</div>`;
+          html+=`<div class="mem-formula">V_reac = (q_cara + q_talón)/2 × p_t = (${fmt(c.qct,2)} + ${fmt(qtalonU,2)})/2 × ${fmt(d.p_t,3)}</div>`;
+          html+=`<div class="mem-result">V_reac = ${fmt(c.Vr,2)} kg/m</div>`;
+          
+          if(c.caso==='Estática'){
+            html+=`<div class="mem-concept">Combinación factorada: U = 1.4D + 1.7L</div>`;
+            html+=`<div class="mem-formula">Vu = |1.4×(W_suelo+W_zapata) + 1.7×W_qsc − V_reac|
+   = |1.4×(${fmt(c.W_st,2)}+${fmt(c.W_z,2)}) + 1.7×${fmt(c.W_q,2)} − ${fmt(c.Vr,2)}|</div>`;
+            html+=`<div class="mem-result">Vu = ${fmt(c.Vu_t,2)} kg/m</div>`;
+            html+=`<div class="mem-formula">Mu = max(1.4×(M_suelo+M_zapata) + 1.7×M_qsc − M_reac, 0)</div>`;
+            html+=`<div class="mem-result">Mu = ${fmt(c.Mu_t,2)} kg-m/m</div>`;
+          }else if(c.caso==='Sísmica'){
+            html+=`<div class="mem-concept">Combinaciones sísmicas</div>`;
+            html+=`<div class="mem-result">Vu₁ = ${fmt(c.Vu1,2)} kg/m  (1.2D + 1.0L + 1.0E)
+Vu₂ = ${fmt(c.Vu2,2)} kg/m  (0.9D + 1.0E)
+Mu₁ = ${fmt(c.Mu1,2)} kg-m/m
+Mu₂ = ${fmt(c.Mu2,2)} kg-m/m</div>`;
+            html+=`<div class="mem-result">Vu = max(Vu₁, Vu₂) = ${fmt(Math.max(c.Vu1,c.Vu2),2)} kg/m
+Mu = max(Mu₁, Mu₂, 0) = ${fmt(Math.max(c.Mu1,c.Mu2,0),2)} kg-m/m</div>`;
+          }
+        }else if(c.grupo==='Puntera'){
+          html+=`<div class="mem-concept">Peso propio de la puntera</div>`;
+          html+=`<div class="mem-formula">W_zapata = p_p × H₃ × γ_conc = ${fmt(d.p_p,3)} × ${fmt(d.H3,3)} × ${fmt(d.Pem,1)}</div>`;
+          html+=`<div class="mem-result">W_zapata = ${fmt(c.W_zp,2)} kg/m</div>`;
+          
+          html+=`<div class="mem-concept">Presión de contacto en el pie</div>`;
+          html+=`<div class="mem-result">q_pie = ${fmt(c.qcp,2)} kg/m²</div>`;
+          html+=`<div class="mem-formula">V_reac = (q_pie + q_cara_pie)/2 × p_p</div>`;
+          html+=`<div class="mem-result">V_reac = ${fmt(c.Vrp,2)} kg/m</div>`;
+          
+          if(c.caso==='Estática'){
+            html+=`<div class="mem-concept">Combinación factorada: U = 1.4D + 1.7L</div>`;
+            html+=`<div class="mem-formula">Vu = |V_reac − 1.4×W_zapata| = |${fmt(c.Vrp,2)} − 1.4×${fmt(c.W_zp,2)}|</div>`;
+            html+=`<div class="mem-result">Vu = ${fmt(c.Vu_p,2)} kg/m</div>`;
+            html+=`<div class="mem-formula">Mu = max(M_reac − 1.4×M_zapata, 0)</div>`;
+            html+=`<div class="mem-result">Mu = ${fmt(c.Mu_p,2)} kg-m/m</div>`;
+          }else if(c.caso==='Sísmica'){
+            html+=`<div class="mem-concept">Combinaciones sísmicas</div>`;
+            html+=`<div class="mem-result">Vu₁ = ${fmt(c.Vu1,2)} kg/m
+Vu₂ = ${fmt(c.Vu2,2)} kg/m
+Mu₁ = ${fmt(c.Mu1,2)} kg-m/m
+Mu₂ = ${fmt(c.Mu2,2)} kg-m/m</div>`;
+            html+=`<div class="mem-result">Vu = max(Vu₁, Vu₂) = ${fmt(Math.max(c.Vu1,c.Vu2),2)} kg/m
+Mu = max(Mu₁, Mu₂, 0) = ${fmt(Math.max(c.Mu1,c.Mu2,0),2)} kg-m/m</div>`;
+          }
+        }
+        
+        // Diseño a flexión
+        html+=`<div class="mem-concept" style="margin-top:10px">Diseño a flexión (E.060 / ACI 318)</div>`;
+        html+=`<div class="mem-formula">ρ_min = max(0.7×√f'c/fy, 14/fy)
+      = max(0.7×√${fmt(d.fc,0)}/${fmt(d.fy,0)}, 14/${fmt(d.fy,0)})
+      = max(${fmt(0.7*Math.sqrt(d.fc)/d.fy,6)}, ${fmt(14/d.fy,6)})</div>`;
+        html+=`<div class="mem-result">ρ_min = ${fmt(r.rho_min,6)}</div>`;
+        html+=`<div class="mem-formula">As_min = ρ_min × b × d = ${fmt(r.rho_min,6)} × 100 × ${fmt(r.d,2)}</div>`;
+        html+=`<div class="mem-result">As_min = ${fmt(r.As_min,2)} cm²/m</div>`;
+        
+        if(r.estado==='OK'){
+          const Mu_usado=c.caso==='Estática'?(c.Mu_e||0):Math.max(c.Mu1||0,c.Mu2||0,0);
+          html+=`<div class="mem-formula">Rn = Mu / (φ × b × d²) = (${fmt(Mu_usado,2)}×100) / (0.90 × 100 × ${fmt(r.d,2)}²)</div>`;
+          html+=`<div class="mem-result">Rn = ${fmt(r.Rn,4)} kg/cm²</div>`;
+          
+          html+=`<div class="mem-formula">ρ = (0.85×f'c/fy) × [1 − √(1 − 2×Rn/(0.85×f'c))]
+  = (0.85×${fmt(d.fc,0)}/${fmt(d.fy,0)}) × [1 − √(1 − 2×${fmt(r.Rn,4)}/(0.85×${fmt(d.fc,0)}))]</div>`;
+          html+=`<div class="mem-result">ρ = ${fmt(r.rho,6)}</div>`;
+          
+          html+=`<div class="mem-formula">β₁ = ${fmt(r.beta1,3)}  (para f'c = ${fmt(d.fc,0)} kg/cm²)
+ρ_b = 0.85×β₁×(f'c/fy)×(6000/(6000+fy)) = ${fmt(r.rho_b,6)}
+ρ_max = 0.75×ρ_b = ${fmt(r.rho_max,6)}</div>`;
+          html+=`<div class="mem-result ${r.rho<=r.rho_max?'ok':'fail'}">Verificación: ρ = ${fmt(r.rho,6)} ${r.rho<=r.rho_max?'≤':'>'} ρ_max = ${fmt(r.rho_max,6)} ${r.rho<=r.rho_max?'✅ Sección sub-reforzada (dúctil)':'❌ Sección sobre-reforzada'}</div>`;
+          
+          html+=`<div class="mem-formula">As_req = ρ × b × d = ${fmt(r.rho,6)} × 100 × ${fmt(r.d,2)}</div>`;
+          html+=`<div class="mem-result">As_req = ${fmt(r.As_req,2)} cm²/m</div>`;
+          
+          html+=`<div class="mem-formula">As_final = max(As_req, As_min) = max(${fmt(r.As_req,2)}, ${fmt(r.As_min,2)})</div>`;
+          html+=`<div class="mem-result ok">As_final = ${fmt(r.As_final,2)} cm²/m ${r.As_final===r.As_min?'(Goberna As_min)':'(Goberna As_req)'}</div>`;
+          
+          // Verificación de corte
+          html+=`<div class="mem-concept" style="margin-top:10px">Verificación por cortante (E.060 / ACI 318)</div>`;
+          html+=`<div class="mem-formula">Vc = 0.53 × √f'c × b × d = 0.53 × √${fmt(d.fc,0)} × 100 × ${fmt(r.d,2)}</div>`;
+          html+=`<div class="mem-result">Vc = ${fmt(r.Vc,2)} kg</div>`;
+          html+=`<div class="mem-formula">ΦVc = 0.85 × Vc = 0.85 × ${fmt(r.Vc,2)}</div>`;
+          const Vu_usado=c.caso==='Estática'?(c.Vu_e||0):Math.max(c.Vu1||0,c.Vu2||0,0);
+          html+=`<div class="mem-result ${r.verif_corte==='Cumple'?'ok':'fail'}">ΦVc = ${fmt(r.phi_Vc,2)} kg  vs  Vu = ${fmt(Vu_usado,2)} kg  →  ${r.verif_corte==='Cumple'?'✅ CUMPLE (no requiere estribos)':'❌ NO CUMPLE (requiere refuerzo por cortante)'}</div>`;
+          
+          // Refuerzo propuesto
+          html+=`<div class="mem-concept" style="margin-top:10px">Refuerzo propuesto (separación de barras)</div>`;
+          html+=`<div class="mem-formula">s = (Ab × 100) / As_final   para cada diámetro disponible</div>`;
+          html+=`<div class="mem-result ok"><strong>Refuerzo a usar:</strong> ${r.refuerzo}</div>`;
+        }else{
+          html+=`<div class="mem-result fail">❌ Estado: ${r.estado}</div>`;
+          if(r.As_min)html+=`<div class="mem-result">As_min = ${fmt(r.As_min,2)} cm²/m</div>`;
+        }
+        
+        html+=`</div>`;
+      }
+    }
+    html+=`</div>`;
+  }
+  return html;
+}
+
+// Diagramas SVG incrustados: quedan incluidos en la memoria HTML y en la impresión.
+function svgEsc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function arrSvg(x1,y1,x2,y2,color,label,tx,ty){return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="2.5" marker-end="url(#arrow)"></line>${label?`<text x="${tx??x2}" y="${ty??y2-4}" fill="${color}" font-size="12" font-weight="700">${svgEsc(label)}</text>`:''}`;}
+function svgDefs(){return `<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"></path></marker><pattern id="soil" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0,8 L8,0" stroke="#b45309" stroke-width="0.8" opacity=".32"></path></pattern></defs>`;}
+function pressureFigure(title,a,b,caption,color,d){const m=Math.max(a,b,1),ha=Math.min(100,20+80*a/m),hb=Math.min(100,20+80*b/m);return `<div class="mem-figure"><h5>${title}</h5><p>${caption}</p><svg viewBox="0 0 760 260" role="img" aria-label="Distribución lineal de presiones de contacto"><defs><marker id="arr3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${color}"></path></marker></defs><line x1="105" y1="185" x2="655" y2="185" stroke="#334155" stroke-width="3"></line><rect x="220" y="155" width="300" height="30" fill="#94a3b8" stroke="#334155" stroke-width="2"></rect><path d="M220 155 L520 155 L520 ${155-hb} L220 ${155-ha} Z" fill="${color}" opacity=".25" stroke="${color}" stroke-width="2"></path><line x1="220" y1="155" x2="220" y2="${155-ha}" stroke="${color}" stroke-width="2" marker-end="url(#arr3)"></line><line x1="520" y1="155" x2="520" y2="${155-hb}" stroke="${color}" stroke-width="2" marker-end="url(#arr3)"></line><text x="185" y="215" fill="#334155" font-size="12">Pie</text><text x="495" y="215" fill="#334155" font-size="12">Talón</text><text x="150" y="45" fill="${color}" font-size="13" font-weight="700">qpie = ${fmt(a,1)} kg/m²</text><text x="470" y="45" fill="${color}" font-size="13" font-weight="700">qtalón = ${fmt(b,1)} kg/m²</text><text x="305" y="242" fill="#475569" font-size="12">B = ${fmt(d.B,3)} m · qmin = ${fmt(Math.min(a,b),1)} · qmax = ${fmt(Math.max(a,b),1)} kg/m²</text></svg><div class="fig-note"><strong>Lectura:</strong> la reacción del terreno es lineal: uniforme si qpie = qtalón, trapezoidal si ambas son positivas y triangular sólo cuando una presión llega a cero.</div></div>`;}
+function renderDidacticFigures(d,R,C){
+  const H=d.H1+d.H2+d.H3,x=245,yb=310,sh=190,yt=yb-sh,yPh=yb-sh/3,yPq=yb-sh/2;
+  const active=`<div class="mem-figure"><h5>Figura 1. Empujes horizontales y puntos de aplicación — Rankine</h5><p>El peso del suelo genera presión creciente con la profundidad (triangular); la sobrecarga genera un incremento constante (rectangular). Las resultantes se ubican en el centroide de cada diagrama.</p><svg viewBox="0 0 760 380" role="img" aria-label="Esquema de empujes activo, sobrecarga y pasivo">${svgDefs()}<rect width="760" height="380" fill="#fff"></rect><path d="M35 310 H720" stroke="#64748b" stroke-width="2"></path><path d="M${x} ${yb} V${yt} H${x+26} V${yb} Z" fill="#94a3b8" stroke="#334155" stroke-width="2"></path><path d="M${x+26} ${yt} H590 V${yb} H${x+26}" fill="url(#soil)" stroke="#b45309"></path><path d="M590 ${yt} H620" stroke="#475569" stroke-width="2"></path><text x="432" y="${yt-12}" fill="#475569" font-size="12">qsc = ${fmt(d.qsc,0)} kg/m²</text><path d="M${x+26} ${yt} L${x+26} ${yb} L${x+118} ${yb} Z" fill="#fecaca" stroke="#dc2626" stroke-width="2"></path><text x="${x+38}" y="${yb+22}" fill="#b91c1c" font-size="11">σh,suelo triangular</text><path d="M${x+26} ${yt} H${x+72} V${yb} H${x+26}" fill="#bfdbfe" stroke="#0284c7" stroke-width="2" opacity=".85"></path><text x="${x+37}" y="${yt+17}" fill="#0369a1" font-size="11">σh,q uniforme</text>${arrSvg(x+145,yPh,x+45,yPh,'#dc2626',`Ph = ${fmt(R.Ph,1)} kg/m`,x+150,yPh-6)}${arrSvg(x+130,yPq,x+45,yPq,'#0284c7',`Pq,h = ${fmt(R.P_qsc_h,1)} kg/m`,x+135,yPq+17)}<line x1="${x-15}" y1="${yPh}" x2="${x-15}" y2="${yb}" stroke="#dc2626" stroke-dasharray="4 3"></line><text x="30" y="${yPh+5}" fill="#b91c1c" font-size="11">H/3</text><line x1="${x-35}" y1="${yPq}" x2="${x-35}" y2="${yb}" stroke="#0284c7" stroke-dasharray="4 3"></line><text x="30" y="${yPq+5}" fill="#0369a1" font-size="11">H/2</text><path d="M${x-65} ${yb} V${yb+48} H${x-15} V${yb}" fill="#94a3b8" stroke="#334155"></path><path d="M${x-65} ${yb+48} L${x-120} ${yb+48} L${x-120} ${yb+92} Z" fill="#dcfce7" stroke="#16a34a" stroke-width="2"></path>${arrSvg(x-160,yb+77,x-125,yb+77,'#16a34a',`Pp = ${fmt(R.Pp,1)} kg/m`,35,yb+103)}<text x="35" y="${yb+125}" fill="#15803d" font-size="11">Pasivo triangular · resultante a Dp/3</text><text x="35" y="${yb+142}" fill="#475569" font-size="11">Dp = ${fmt(R.Dp,2)} m</text><text x="${x-15}" y="${yt-28}" fill="#334155" font-size="12" font-weight="700">Tallo</text><text x="450" y="${yb+35}" fill="#92400e" font-size="12" font-weight="700">Relleno</text></svg><div class="fig-note"><strong>Lectura:</strong> Ph actúa a H/3 y Pq,h a H/2, medidos desde la base del relleno. Pp se opone al deslizamiento y actúa a Dp/3 desde la base del frente pasivo.</div></div>`;
+  const global=`<div class="mem-figure"><h5>Figura 2. Equilibrio global: acciones verticales, horizontales y resultante</h5><p>Resumen de las acciones consideradas en las verificaciones de volteo, deslizamiento y excentricidad.</p><svg viewBox="0 0 760 330" role="img" aria-label="Diagrama de equilibrio global"><defs><marker id="arr2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#475569"></path></marker><pattern id="soil2" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0,8 L8,0" stroke="#b45309" stroke-width=".8"></path></pattern></defs><path d="M110 255 H650" stroke="#334155" stroke-width="3"></path><path d="M265 255 V95 H295 V255" fill="#94a3b8" stroke="#334155" stroke-width="2"></path><rect x="150" y="255" width="350" height="28" fill="#94a3b8" stroke="#334155" stroke-width="2"></rect><path d="M295 95 H550 V255 H295" fill="url(#soil2)" stroke="#b45309"></path><line x1="205" y1="55" x2="205" y2="235" stroke="#7c3aed" stroke-width="3" marker-end="url(#arr2)"></line><text x="145" y="45" fill="#6d28d9" font-size="12" font-weight="700">ΣW: tallo + zapata + suelo + qsc</text><line x1="570" y1="160" x2="320" y2="160" stroke="#dc2626" stroke-width="3" marker-end="url(#arr2)"></line><text x="525" y="145" fill="#b91c1c" font-size="12" font-weight="700">Ph + Pq,h</text><line x1="405" y1="75" x2="405" y2="235" stroke="#0f766e" stroke-width="3" stroke-dasharray="7 4" marker-end="url(#arr2)"></line><text x="414" y="84" fill="#0f766e" font-size="12" font-weight="700">ΣFv</text><line x1="405" y1="255" x2="440" y2="288" stroke="#0f766e" stroke-width="3"></line><text x="446" y="302" fill="#0f766e" font-size="11">resultante y e = ${fmt(R.e,3)} m</text><line x1="325" y1="292" x2="325" y2="316" stroke="#64748b"></line><line x1="405" y1="292" x2="405" y2="316" stroke="#64748b"></line><path d="M325 310 H405" stroke="#64748b" stroke-width="1.5"></path><text x="335" y="326" fill="#475569" font-size="11">B/6 = ${fmt(d.B/6,3)} m</text></svg><div class="fig-note"><strong>Lectura:</strong> las acciones verticales estabilizan; los empujes horizontales provocan deslizamiento y volteo. La posición de la resultante define la excentricidad y las presiones bajo la base.</div></div>`;
+  return `<div class="mem-section" id="m4v"><h3>4A. DIAGRAMAS DIDÁCTICOS DE ACCIONES Y REACCIONES</h3><div class="mem-concept">Los esquemas se generan con los mismos resultados numéricos de Rankine usados en esta memoria. Explican distribución, sentido, punto de aplicación y efecto de cada acción.</div>${active}${global}${pressureFigure('Figura 3. Presiones de contacto — estado de servicio',R.qpie,R.qtalon,'Distribución por cargas de servicio para verificar contacto, excentricidad y capacidad portante.','#0284c7',d)}${pressureFigure('Figura 4. Presiones de contacto — estado último/factorado',R.qpie_u,R.qtalon_u,'Distribución factorizada usada en el diseño de talón y puntera.','#7c3aed',d)}</div>`;
+}
+
+function renderMemory(data,R,C){
+  const d=data;
+  const now=new Date().toLocaleString('es-PE');
+  const H_total=d.H1+d.H2+d.H3;
+  const alpha_rad=d.Ai*Math.PI/180;
+  const Af1r=d.Af1*Math.PI/180;
+  const Af2r=d.Af2*Math.PI/180;
+  
+  // Calcular secciones de refuerzo para la memoria
+  const secR=calcRefuerzoCompleto(d,R.Ka,R.Kae,{qpie_u:R.qpie_u,qtalon_u:R.qtalon_u,qpie_u_sismo:R.qpie_u_sismo,qtalon_u_sismo:R.qtalon_u_sismo});
+  const secC=calcRefuerzoCompleto(d,C.Ka,C.Kae,{qpie_u:C.qpie_u,qtalon_u:C.qtalon_u,qpie_u_sismo:C.qpie_u_sismo,qtalon_u_sismo:C.qtalon_u_sismo});
+  
+  let html=`
+  <div class="memory-header">
+    <h1>📋 MEMORIA DE CÁLCULO DETALLADA</h1>
+    <h2>Análisis Geotécnico y Diseño Estructural de Muro de Contención</h2>
+    <h2>Métodos de Rankine & Coulomb | Norma E.060 (Perú) / ACI 318</h2>
+    <div class="meta">Fecha de generación: <strong>${now}</strong> | Versión del software: 3.3</div>
+  </div>
+
+  <div class="mem-toc">
+    <h4>📑 ÍNDICE DE CONTENIDO</h4>
+    <ol>
+      <li><a href="#m1">Datos de Entrada</a></li>
+      <li><a href="#m2">Parámetros Geométricos Derivados</a></li>
+      <li><a href="#m3">Descomposición de Pesos y Brazos</a></li>
+       <li><a href="#m4">Coeficiente Ka (Rankine)</a></li>
+       <li><a href="#m4v">Diagramas Didácticos de Acciones y Reacciones</a></li>
+      <li><a href="#m5">Empuje Activo y Verificaciones (Rankine)</a></li>
+      <li><a href="#m6">Capacidad de Carga qu (Rankine)</a></li>
+      <li><a href="#m7">Coeficiente Ka (Coulomb)</a></li>
+      <li><a href="#m8">Empuje Activo y Verificaciones (Coulomb)</a></li>
+      <li><a href="#m9">Capacidad de Carga qu (Coulomb)</a></li>
+      <li><a href="#m10">Análisis Sísmico (Rankine)</a></li>
+      <li><a href="#m11">Análisis Sísmico (Coulomb)</a></li>
+      <li><a href="#m12">Presiones Factoradas</a></li>
+      <li><a href="#m13">Diseño Refuerzo Pantalla (Rankine)</a></li>
+      <li><a href="#m14">Diseño Refuerzo Zapata (Rankine)</a></li>
+      <li><a href="#m15">Diseño Refuerzo Pantalla (Coulomb)</a></li>
+      <li><a href="#m16">Diseño Refuerzo Zapata (Coulomb)</a></li>
+      <li><a href="#m17">Resumen de Cumplimiento</a></li>
+    </ol>
+  </div>
+
+  <div class="mem-section" id="m1">
+    <h3>1. DATOS DE ENTRADA DEL PROYECTO</h3>
+    <div class="mem-subsection">
+      <h4>1.1 Geometría del Muro</h4>
+      <table class="mem-table">
+        <tr><th>Parámetro</th><th>Símbolo</th><th>Valor</th><th>Unidad</th></tr>
+        <tr><td>Altura de la pantalla</td><td>H₂</td><td>${fmt(d.H2,3)}</td><td>m</td></tr>
+        <tr><td>Altura de la zapata</td><td>H₃</td><td>${fmt(d.H3,3)}</td><td>m</td></tr>
+        <tr><td>Profundidad de cimentación</td><td>D</td><td>${fmt(d.D,3)}</td><td>m</td></tr>
+        <tr><td>Espesor en la base</td><td>t_b</td><td>${fmt(d.t_b,3)}</td><td>m</td></tr>
+        <tr><td>Espesor en la corona</td><td>t_c</td><td>${fmt(d.t_c,3)}</td><td>m</td></tr>
+        <tr><td>Proyección del pie</td><td>p_p</td><td>${fmt(d.p_p,3)}</td><td>m</td></tr>
+        <tr><td>Proyección del talón</td><td>p_t</td><td>${fmt(d.p_t,3)}</td><td>m</td></tr>
+        <tr><td>Cara vertical del tallo</td><td>—</td><td>${d.cara_vertical}</td><td>—</td></tr>
+      </table>
+    </div>
+    <div class="mem-subsection">
+      <h4>1.2 Propiedades del Terreno</h4>
+      <table class="mem-table">
+        <tr><th>Parámetro</th><th>Símbolo</th><th>Valor</th><th>Unidad</th></tr>
+        <tr><td>Ángulo de inclinación</td><td>Ai</td><td>${fmt(d.Ai,2)}</td><td>°</td></tr>
+        <tr><td>Peso esp. relleno</td><td>γ₁</td><td>${fmt(d.P1,1)}</td><td>kg/m³</td></tr>
+        <tr><td>Ángulo fricción relleno</td><td>φ₁</td><td>${fmt(d.Af1,2)}</td><td>°</td></tr>
+        <tr><td>Cohesión relleno</td><td>c₁</td><td>${fmt(d.C1,1)}</td><td>kg/m²</td></tr>
+        <tr><td>Peso esp. cimentación</td><td>γ₂</td><td>${fmt(d.P2,1)}</td><td>kg/m³</td></tr>
+        <tr><td>Ángulo fricción ciment.</td><td>φ₂</td><td>${fmt(d.Af2,2)}</td><td>°</td></tr>
+        <tr><td>Cohesión cimentación</td><td>c₂</td><td>${fmt(d.C2,1)}</td><td>kg/m²</td></tr>
+        <tr><td>Sobrecarga</td><td>q_sc</td><td>${fmt(d.qsc,1)}</td><td>kg/m²</td></tr>
+      </table>
+    </div>
+    <div class="mem-subsection">
+      <h4>1.3 Materiales y Sismo</h4>
+      <table class="mem-table">
+        <tr><th>Parámetro</th><th>Símbolo</th><th>Valor</th><th>Unidad</th></tr>
+        <tr><td>Peso esp. concreto</td><td>γ_conc</td><td>${fmt(d.Pem,1)}</td><td>kg/m³</td></tr>
+        <tr><td>Peso esp. suelo zapata</td><td>γ_suelo</td><td>${fmt(d.Pes,1)}</td><td>kg/m³</td></tr>
+        <tr><td>Resistencia concreto</td><td>f'c</td><td>${fmt(d.fc,1)}</td><td>kg/cm²</td></tr>
+        <tr><td>Fluencia acero</td><td>fy</td><td>${fmt(d.fy,1)}</td><td>kg/cm²</td></tr>
+        <tr><td>Coef. sísmico</td><td>K_h</td><td>${fmt(d.Kh,3)}</td><td>adim.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="mem-section" id="m2">
+    <h3>2. PARÁMETROS GEOMÉTRICOS DERIVADOS</h3>
+    <div class="mem-subsection">
+      <h4>2.1 Altura Adicional por Talud (H₁)</h4>
+      <div class="mem-concept">H₁ es una variable dependiente: el talud del terreno nace en la corona del tallo y sube hasta el borde del talón, por lo que su recorrido horizontal es exactamente p_t + (t_b − t_c).</div>
+      <div class="mem-formula">H₁ = tan(Ai) × [p_t + (t_b − t_c)]</div>
+      <div class="mem-substitution">H₁ = tan(${fmt(d.Ai,2)}°) × [${fmt(d.p_t,3)} + (${fmt(d.t_b,3)} − ${fmt(d.t_c,3)})]</div>
+      <div class="mem-result">H₁ = ${fmt(d.H1,3)} m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>2.2 Ancho Total de la Zapata</h4>
+      <div class="mem-formula">B = p_p + t_b + p_t</div>
+      <div class="mem-substitution">B = ${fmt(d.p_p,3)} + ${fmt(d.t_b,3)} + ${fmt(d.p_t,3)}</div>
+      <div class="mem-result">B = ${fmt(d.B,3)} m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>2.3 Altura Total del Muro</h4>
+      <div class="mem-formula">Hp = H₁ + H₂ + H₃</div>
+      <div class="mem-substitution">Hp = ${fmt(d.H1,3)} + ${fmt(d.H2,3)} + ${fmt(d.H3,3)}</div>
+      <div class="mem-result">Hp = ${fmt(H_total,3)} m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>2.3 Conversión de Ángulos a Radianes</h4>
+      <div class="mem-formula">α = Ai × π/180 = ${fmt(d.Ai,2)}° = ${fmt(alpha_rad,5)} rad
+φ₁ = Af₁ × π/180 = ${fmt(d.Af1,2)}° = ${fmt(Af1r,5)} rad
+φ₂ = Af₂ × π/180 = ${fmt(d.Af2,2)}° = ${fmt(Af2r,5)} rad</div>
+    </div>
+  </div>
+
+  <div class="mem-section" id="m3">
+    <h3>3. DESCOMPOSICIÓN DE PESOS Y BRAZOS</h3>
+    <div class="mem-subsection">
+      <h4>3.1 Peso del Tallo (Rectángulo)</h4>
+      <div class="mem-formula">P_tr = t_c × H₂ × γ_conc</div>
+      <div class="mem-substitution">P_tr = ${fmt(d.t_c,3)} × ${fmt(d.H2,3)} × ${fmt(d.Pem,1)}</div>
+      <div class="mem-result">P_tr = ${fmt(R.P_tr,2)} kg/m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>3.2 Peso del Tallo (Triángulo)</h4>
+      <div class="mem-formula">P_ttri = 0.5 × (t_b − t_c) × H₂ × γ_conc</div>
+      <div class="mem-substitution">P_ttri = 0.5 × (${fmt(d.t_b,3)} − ${fmt(d.t_c,3)}) × ${fmt(d.H2,3)} × ${fmt(d.Pem,1)}</div>
+      <div class="mem-result">P_ttri = ${fmt(R.P_ttri,2)} kg/m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>3.3 Peso de la Zapata</h4>
+      <div class="mem-formula">P_z = B × H₃ × γ_conc</div>
+      <div class="mem-substitution">P_z = ${fmt(d.B,3)} × ${fmt(d.H3,3)} × ${fmt(d.Pem,1)}</div>
+      <div class="mem-result">P_z = ${fmt(R.P_z,2)} kg/m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>3.4 Peso del Suelo sobre el Talón</h4>
+      <div class="mem-formula">P_st = p_t × H₂ × γ_suelo</div>
+      <div class="mem-substitution">P_st = ${fmt(d.p_t,3)} × ${fmt(d.H2,3)} × ${fmt(d.Pes,1)}</div>
+      <div class="mem-result">P_st = ${fmt(R.P_st,2)} kg/m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>3.5 Peso de la Sobrecarga sobre el Talón</h4>
+      <div class="mem-concept">La sobrecarga qsc, además de incrementar el empuje activo horizontal (ver 5.2), actúa como una carga vertical directa sobre el relleno situado encima del talón, contribuyendo al equilibrio global de la estructura (volteo, deslizamiento y presiones de contacto).</div>
+      <div class="mem-formula">P_qsc_v = qsc × p_t</div>
+      <div class="mem-substitution">P_qsc_v = ${fmt(d.qsc,1)} × ${fmt(d.p_t,3)}</div>
+      <div class="mem-result">P_qsc_v = ${fmt(R.P_qsc_v,2)} kg/m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>3.6 Sumatoria de Fuerzas Verticales</h4>
+      <div class="mem-concept">ΣFv_R agrupa solo las cargas de peso propio (tallo, zapata, suelo sobre el talón). El total ΣFv usado en las verificaciones de estabilidad (sección 5) suma además la componente vertical del empuje activo (Pv) y el peso de la sobrecarga (P_qsc_v).</div>
+      <div class="mem-result">ΣFv_R (peso propio) = ${fmt(R.SFv_R,2)} kg/m</div>
+      <div class="mem-formula">ΣFv = ΣFv_R + Pv + P_qsc_v</div>
+      <div class="mem-substitution">ΣFv = ${fmt(R.SFv_R,2)} + ${fmt(R.Pv,2)} + ${fmt(R.P_qsc_v,2)}</div>
+      <div class="mem-result">ΣFv (total, Rankine) = ${fmt(R.SFv,2)} kg/m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>3.7 Sumatoria de Momentos Estabilizantes</h4>
+      <div class="mem-result">ΣMr_R (peso propio) = ${fmt(R.SMr_R,2)} kg-m/m</div>
+      <div class="mem-formula">ΣMr = ΣMr_R + Pv×B + P_qsc_v×Bm_st</div>
+      <div class="mem-substitution">ΣMr = ${fmt(R.SMr_R,2)} + ${fmt(R.Pv,2)}×${fmt(d.B,3)} + ${fmt(R.P_qsc_v,2)}×${fmt(R.Bm_st,3)}</div>
+      <div class="mem-result">ΣMr (total, Rankine) = ${fmt(R.SMr,2)} kg-m/m</div>
+    </div>
+  </div>
+
+  <div class="mem-section" id="m4">
+    <h3>4. COEFICIENTE Ka — RANKINE</h3>
+    <div class="mem-concept">Método de Rankine: muro liso y vertical (δ=0, β=90°)</div>
+    <div class="mem-formula">Ka = cos(α) × [cos(α) − √(cos²(α) − cos²(φ₁))] / [cos(α) + √(cos²(α) − cos²(φ₁))]</div>
+    <div class="mem-result">Ka (Rankine) = ${fmt(R.Ka,5)}</div>
+  </div>
+
+  ${renderDidacticFigures(d,R,C)}
+
+  <div class="mem-section" id="m5">
+    <h3>5. EMPUJE ACTIVO Y VERIFICACIONES — RANKINE</h3>
+    <div class="mem-subsection">
+      <h4>5.1 Empuje Activo Total</h4>
+      <div class="mem-formula">Pa = 0.5 × γ₁ × Hp² × Ka</div>
+      <div class="mem-substitution">Pa = 0.5 × ${fmt(d.P1,1)} × ${fmt(H_total,3)}² × ${fmt(R.Ka,5)}</div>
+      <div class="mem-result">Pa = ${fmt(R.Pa_total,2)} kg/m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>5.2 Componentes del Empuje</h4>
+      <div class="mem-result">Ph = ${fmt(R.Ph,2)} kg/m (horizontal)
+Pv = ${fmt(R.Pv,2)} kg/m (vertical)
+P_qsc_h = ${fmt(R.P_qsc_h,2)} kg/m (sobrecarga)</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>5.3 Momento Volcante</h4>
+      <div class="mem-formula">Mo = Ph × (Hp/3) + P_qsc_h × (Hp/2)</div>
+      <div class="mem-result">Mo = ${fmt(R.Mo,2)} kg-m/m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>5.4 Empuje Pasivo (resistencia friccionante frente a la zapata)</h4>
+      <div class="mem-concept">Resistencia pasiva del terreno de cimentación que se opone al deslizamiento, generada por el suelo ubicado por delante de la zapata a lo largo de la profundidad de empotramiento Dp. Se calcula con el método de Rankine (cara vertical, sin fricción muro-suelo: δp = 0, β = 90°) y se suma en el numerador del FS de deslizamiento (ver 5.5).</div>
+      <div class="mem-formula">Dp = D + D₂</div>
+      <div class="mem-substitution">Dp = ${fmt(d.D,3)} + ${fmt(d.D2,3)}</div>
+      <div class="mem-result">Dp = ${fmt(R.Dp,3)} m</div>
+      <div class="mem-formula">Kp (Rankine) = tan²(45° + φ₂/2)</div>
+      <div class="mem-substitution">Kp = tan²(45° + ${fmt(d.Af2,2)}°/2)</div>
+      <div class="mem-result">Kp (Rankine) = ${fmt(R.Kp_rankine,4)}</div>
+      <div class="mem-formula">Pp = 0.5 × Kp × γ₂ × Dp² + 2 × c₂ × √Kp × Dp</div>
+      <div class="mem-substitution">Pp = 0.5 × ${fmt(R.Kp_rankine,4)} × ${fmt(d.P2,1)} × ${fmt(R.Dp,3)}² + 2 × ${fmt(d.C2,1)} × √${fmt(R.Kp_rankine,4)} × ${fmt(R.Dp,3)}</div>
+      <div class="mem-result">Pp (Rankine) = ${fmt(R.Pp,2)} kg/m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>5.5 Verificaciones de Estabilidad</h4>
+      <div class="mem-result ${R.FSv>=1.5?'ok':'fail'}">FS_volteo = ${fmt(R.FSv,3)} ${R.FSv>=1.5?'✅ CUMPLE (≥ 1.50)':'❌ NO CUMPLE'}</div>
+      <div class="mem-formula">FS_desliz = (ΣFv×tan(2/3φ₂) + B²×(2/3)×c₂ + Pp) / (Ph + P_qsc_h)</div>
+      <div class="mem-result ${R.FSd>=1.5?'ok':'fail'}">FS_desliz = ${fmt(R.FSd,3)} ${R.FSd>=1.5?'✅ CUMPLE (≥ 1.50)':'❌ NO CUMPLE'}</div>
+      <div class="mem-result ${Math.abs(R.e)<=R.emax?'ok':'fail'}">e = ${fmt(R.e,4)} m (límite B/6 = ${fmt(R.emax,4)} m) ${Math.abs(R.e)<=R.emax?'✅ CUMPLE':'❌ NO CUMPLE'}</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>5.6 Presiones de Contacto</h4>
+      <div class="mem-result">q_pie = ${fmt(R.qpie,2)} kg/m²
+q_talón = ${fmt(R.qtalon,2)} kg/m²</div>
+    </div>
+  </div>
+
+  <div class="mem-section" id="m6">
+    <h3>6. CAPACIDAD DE CARGA — RANKINE</h3>
+    <div class="mem-subsection">
+      <h4>6.1 Factores de Capacidad de Carga (Terzaghi/Meyerhof-Reissner)</h4>
+      <div class="mem-formula">Nq = tan²(45° + φ₂/2) × e^(π×tan(φ₂))</div>
+      <div class="mem-substitution">Nq = tan²(45° + ${fmt(d.Af2,2)}°/2) × e^(π×tan(${fmt(d.Af2,2)}°))</div>
+      <div class="mem-result">Nq = ${fmt(R.Nq,4)}</div>
+      <div class="mem-formula">Nc = (Nq − 1) / tan(φ₂)   [si φ₂ = 0 → Nc = 5.14]</div>
+      <div class="mem-substitution">Nc = (${fmt(R.Nq,4)} − 1) / tan(${fmt(d.Af2,2)}°)</div>
+      <div class="mem-result">Nc = ${fmt(R.Nc,4)}</div>
+      <div class="mem-formula">Nγ = 2 × (Nq + 1) × tan(φ₂)   [si φ₂ = 0 → Nγ = 0]</div>
+      <div class="mem-substitution">Nγ = 2 × (${fmt(R.Nq,4)} + 1) × tan(${fmt(d.Af2,2)}°)</div>
+      <div class="mem-result">Nγ = ${fmt(R.Ny,4)}</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>6.2 Ancho Efectivo de la Zapata (Meyerhof)</h4>
+      <div class="mem-concept">Ante la excentricidad de la carga, la capacidad portante se evalúa sobre un ancho efectivo B' = B − 2e, reducido y centrado respecto a la resultante.</div>
+      <div class="mem-formula">B' = B − 2×e</div>
+      <div class="mem-substitution">B' = ${fmt(d.B,3)} − 2×${fmt(R.e,4)}</div>
+      <div class="mem-result">B' = ${fmt(R.Bp_eff,3)} m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>6.3 Factores de Profundidad</h4>
+      <div class="mem-formula">Fqd = 1 + 2×tan(φ₂)×[1−sin(φ₂)]²×(D/B')</div>
+      <div class="mem-substitution">Fqd = 1 + 2×tan(${fmt(d.Af2,2)}°)×[1−sin(${fmt(d.Af2,2)}°)]²×(${fmt(d.D,3)}/${fmt(R.Bp_eff,3)})</div>
+      <div class="mem-result">Fqd = ${fmt(R.Fqd,4)}</div>
+      <div class="mem-formula">Fcd = 1 + 0.4×(D/B')</div>
+      <div class="mem-substitution">Fcd = 1 + 0.4×(${fmt(d.D,3)}/${fmt(R.Bp_eff,3)})</div>
+      <div class="mem-result">Fcd = ${fmt(R.Fcd,4)}</div>
+      <div class="mem-formula">Fγd = 1  (Meyerhof, sin incremento por profundidad para el término de γ)</div>
+      <div class="mem-result">Fγd = ${fmt(R.Fyd,4)}</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>6.4 Ángulo de Inclinación de la Carga y Factores de Inclinación</h4>
+      <div class="mem-concept">La resultante de las cargas horizontales (empuje activo + sobrecarga) frente a la carga vertical total inclina la resultante un ángulo Y respecto a la vertical, lo que reduce la capacidad de carga.</div>
+      <div class="mem-formula">Y = arctan[(Ph + P_qsc_h) / ΣFv]</div>
+      <div class="mem-substitution">Y = arctan[(${fmt(R.Ph,2)} + ${fmt(R.P_qsc_h,2)}) / ${fmt(R.SFv,2)}]</div>
+      <div class="mem-result">Y = ${fmt(R.Y,5)} rad = ${fmt(R.Y*180/Math.PI,3)}°</div>
+      <div class="mem-formula">Fci = Fqi = [1 − Y/(π/2)]²</div>
+      <div class="mem-substitution">Fci = Fqi = [1 − ${fmt(R.Y,5)}/(π/2)]²</div>
+      <div class="mem-result">Fci = Fqi = ${fmt(R.Fci,4)}</div>
+      <div class="mem-formula">Fγi = [1 − Y/φ₂]²   [si φ₂ = 0 → Fγi = 0]</div>
+      <div class="mem-substitution">Fγi = [1 − ${fmt(R.Y,5)}/${fmt(Af2r,5)}]²</div>
+      <div class="mem-result">Fγi = ${fmt(R.Fyi,4)}</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>6.5 Capacidad de Carga Última qu</h4>
+      <div class="mem-formula">qu = c₂×Nc×Fcd×Fci + γ₂×D×Nq×Fqd×Fqi + 0.5×γ₂×B'×Nγ×Fγd×Fγi</div>
+      <div class="mem-substitution">qu = ${fmt(d.C2,1)}×${fmt(R.Nc,4)}×${fmt(R.Fcd,4)}×${fmt(R.Fci,4)}
+   + ${fmt(d.P2,1)}×${fmt(d.D,3)}×${fmt(R.Nq,4)}×${fmt(R.Fqd,4)}×${fmt(R.Fci,4)}
+   + 0.5×${fmt(d.P2,1)}×${fmt(R.Bp_eff,3)}×${fmt(R.Ny,4)}×${fmt(R.Fyd,4)}×${fmt(R.Fyi,4)}</div>
+      <div class="mem-result">qu = ${fmt(R.qu,2)} kg/m²</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>6.6 Factor de Seguridad</h4>
+      <div class="mem-formula">FS_carga = qu / q_pie</div>
+      <div class="mem-substitution">FS_carga = ${fmt(R.qu,2)} / ${fmt(R.qpie,2)}</div>
+      <div class="mem-result ${R.FSc>=3?'ok':'fail'}">FS_carga = ${fmt(R.FSc,3)} ${R.FSc>=3?'✅ CUMPLE (≥ 3.00)':'❌ NO CUMPLE'}</div>
+    </div>
+  </div>
+
+  <div class="mem-section" id="m7">
+    <h3>7. COEFICIENTE Ka — COULOMB</h3>
+    <div class="mem-concept">Método de Coulomb: considera fricción muro-suelo δ = 2φ₁/3</div>
+    <div class="mem-result">δ = ${fmt((2/3)*d.Af1,3)}°
+Ka (Coulomb) = ${fmt(C.Ka,5)}</div>
+    <div class="mem-note">💡 Coulomb considera la fricción muro-suelo, produciendo generalmente un empuje ligeramente menor que Rankine.</div>
+  </div>
+
+  <div class="mem-section" id="m8">
+    <h3>8. EMPUJE ACTIVO Y VERIFICACIONES — COULOMB</h3>
+    <div class="mem-subsection">
+      <h4>8.1 Empuje Activo Total</h4>
+      <div class="mem-result">Pa = ${fmt(C.Pa_total,2)} kg/m
+Ph = ${fmt(C.Ph,2)} kg/m
+Pv = ${fmt(C.Pv,2)} kg/m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>8.2 Empuje Pasivo (resistencia friccionante frente a la zapata) — Coulomb</h4>
+      <div class="mem-concept">A diferencia de Rankine, el método de Coulomb incorpora la fricción entre el suelo y la cara vertical de la zapata (δp = 2φ₂/3), lo que incrementa el valor de Kp respecto al caso liso de Rankine.</div>
+      <div class="mem-result">Dp = ${fmt(C.Dp,3)} m
+δp = 2×φ₂/3 = ${fmt((2/3)*d.Af2,3)}°</div>
+      <div class="mem-formula">Kp (Coulomb) = sin²(β−φ₂) / { sin²β × sin(β+δp) × [1 − √(sin(φ₂+δp)×sin(φ₂) / (sin(β+δp)×sin(β)))]² }   con β = 90°</div>
+      <div class="mem-result">Kp (Rankine, referencia) = ${fmt(C.Kp_rankine,4)}
+Kp (Coulomb, usado) = ${fmt(C.Kp_coulomb,4)}</div>
+      <div class="mem-formula">Pp = 0.5 × Kp × γ₂ × Dp² + 2 × c₂ × √Kp × Dp</div>
+      <div class="mem-substitution">Pp = 0.5 × ${fmt(C.Kp,4)} × ${fmt(d.P2,1)} × ${fmt(C.Dp,3)}² + 2 × ${fmt(d.C2,1)} × √${fmt(C.Kp,4)} × ${fmt(C.Dp,3)}</div>
+      <div class="mem-result">Pp (Coulomb) = ${fmt(C.Pp,2)} kg/m</div>
+      ${C.Kp_coulomb_valido?'':'<div class="mem-note">⚠️ La fórmula de Coulomb degeneró para esta combinación de φ₂ y δp (caso poco común con δp grande); se usó el valor de Rankine como respaldo conservador.</div>'}
+      <div class="mem-note">💡 El empuje pasivo de Coulomb asume una superficie de falla plana y, para valores altos de fricción muro-suelo, tiende a sobrestimar la resistencia real (la falla real es curva). Por seguridad, muchas referencias recomiendan limitar o verificar este valor contra el de Rankine, o reducirlo si δp/φ₂ es alto.</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>8.3 Verificaciones de Estabilidad</h4>
+      <div class="mem-result ${C.FSv>=1.5?'ok':'fail'}">FS_volteo = ${fmt(C.FSv,3)} ${C.FSv>=1.5?'✅ CUMPLE':'❌ NO CUMPLE'}</div>
+      <div class="mem-result ${C.FSd>=1.5?'ok':'fail'}">FS_desliz = ${fmt(C.FSd,3)} ${C.FSd>=1.5?'✅ CUMPLE':'❌ NO CUMPLE'}</div>
+      <div class="mem-result ${Math.abs(C.e)<=C.emax?'ok':'fail'}">e = ${fmt(C.e,4)} m ${Math.abs(C.e)<=C.emax?'✅ CUMPLE':'❌ NO CUMPLE'}</div>
+      <div class="mem-result">q_pie = ${fmt(C.qpie,2)} kg/m²
+q_talón = ${fmt(C.qtalon,2)} kg/m²</div>
+    </div>
+  </div>
+
+  <div class="mem-section" id="m9">
+    <h3>9. CAPACIDAD DE CARGA — COULOMB</h3>
+    <div class="mem-subsection">
+      <h4>9.1 Factores de Capacidad de Carga (Terzaghi/Meyerhof-Reissner)</h4>
+      <div class="mem-concept">Los factores Nq, Nc, Nγ dependen únicamente del ángulo de fricción del suelo de cimentación (φ₂) y son, por tanto, idénticos a los obtenidos con Rankine en la sección 6.1; se repiten aquí para que el desarrollo de Coulomb sea autocontenido.</div>
+      <div class="mem-formula">Nq = tan²(45° + φ₂/2) × e^(π×tan(φ₂))</div>
+      <div class="mem-substitution">Nq = tan²(45° + ${fmt(d.Af2,2)}°/2) × e^(π×tan(${fmt(d.Af2,2)}°))</div>
+      <div class="mem-result">Nq = ${fmt(C.Nq,4)}</div>
+      <div class="mem-formula">Nc = (Nq − 1) / tan(φ₂)   [si φ₂ = 0 → Nc = 5.14]</div>
+      <div class="mem-substitution">Nc = (${fmt(C.Nq,4)} − 1) / tan(${fmt(d.Af2,2)}°)</div>
+      <div class="mem-result">Nc = ${fmt(C.Nc,4)}</div>
+      <div class="mem-formula">Nγ = 2 × (Nq + 1) × tan(φ₂)   [si φ₂ = 0 → Nγ = 0]</div>
+      <div class="mem-substitution">Nγ = 2 × (${fmt(C.Nq,4)} + 1) × tan(${fmt(d.Af2,2)}°)</div>
+      <div class="mem-result">Nγ = ${fmt(C.Ny,4)}</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>9.2 Ancho Efectivo de la Zapata (Meyerhof)</h4>
+      <div class="mem-formula">B' = B − 2×e</div>
+      <div class="mem-substitution">B' = ${fmt(d.B,3)} − 2×${fmt(C.e,4)}</div>
+      <div class="mem-result">B' = ${fmt(C.Bp_eff,3)} m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>9.3 Factores de Profundidad</h4>
+      <div class="mem-formula">Fqd = 1 + 2×tan(φ₂)×[1−sin(φ₂)]²×(D/B')</div>
+      <div class="mem-substitution">Fqd = 1 + 2×tan(${fmt(d.Af2,2)}°)×[1−sin(${fmt(d.Af2,2)}°)]²×(${fmt(d.D,3)}/${fmt(C.Bp_eff,3)})</div>
+      <div class="mem-result">Fqd = ${fmt(C.Fqd,4)}</div>
+      <div class="mem-formula">Fcd = 1 + 0.4×(D/B')</div>
+      <div class="mem-substitution">Fcd = 1 + 0.4×(${fmt(d.D,3)}/${fmt(C.Bp_eff,3)})</div>
+      <div class="mem-result">Fcd = ${fmt(C.Fcd,4)}</div>
+      <div class="mem-formula">Fγd = 1  (Meyerhof, sin incremento por profundidad para el término de γ)</div>
+      <div class="mem-result">Fγd = ${fmt(C.Fyd,4)}</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>9.4 Ángulo de Inclinación de la Carga y Factores de Inclinación</h4>
+      <div class="mem-formula">Y = arctan[(Ph + P_qsc_h) / ΣFv]</div>
+      <div class="mem-substitution">Y = arctan[(${fmt(C.Ph,2)} + ${fmt(C.P_qsc_h,2)}) / ${fmt(C.SFv,2)}]</div>
+      <div class="mem-result">Y = ${fmt(C.Y,5)} rad = ${fmt(C.Y*180/Math.PI,3)}°</div>
+      <div class="mem-formula">Fci = Fqi = [1 − Y/(π/2)]²</div>
+      <div class="mem-substitution">Fci = Fqi = [1 − ${fmt(C.Y,5)}/(π/2)]²</div>
+      <div class="mem-result">Fci = Fqi = ${fmt(C.Fci,4)}</div>
+      <div class="mem-formula">Fγi = [1 − Y/φ₂]²   [si φ₂ = 0 → Fγi = 0]</div>
+      <div class="mem-substitution">Fγi = [1 − ${fmt(C.Y,5)}/${fmt(Af2r,5)}]²</div>
+      <div class="mem-result">Fγi = ${fmt(C.Fyi,4)}</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>9.5 Capacidad de Carga Última qu</h4>
+      <div class="mem-formula">qu = c₂×Nc×Fcd×Fci + γ₂×D×Nq×Fqd×Fqi + 0.5×γ₂×B'×Nγ×Fγd×Fγi</div>
+      <div class="mem-substitution">qu = ${fmt(d.C2,1)}×${fmt(C.Nc,4)}×${fmt(C.Fcd,4)}×${fmt(C.Fci,4)}
+   + ${fmt(d.P2,1)}×${fmt(d.D,3)}×${fmt(C.Nq,4)}×${fmt(C.Fqd,4)}×${fmt(C.Fci,4)}
+   + 0.5×${fmt(d.P2,1)}×${fmt(C.Bp_eff,3)}×${fmt(C.Ny,4)}×${fmt(C.Fyd,4)}×${fmt(C.Fyi,4)}</div>
+      <div class="mem-result">qu = ${fmt(C.qu,2)} kg/m²</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>9.6 Factor de Seguridad</h4>
+      <div class="mem-formula">FS_carga = qu / q_pie</div>
+      <div class="mem-substitution">FS_carga = ${fmt(C.qu,2)} / ${fmt(C.qpie,2)}</div>
+      <div class="mem-result ${C.FSc>=3?'ok':'fail'}">FS_carga = ${fmt(C.FSc,3)} ${C.FSc>=3?'✅ CUMPLE (≥ 3.00)':'❌ NO CUMPLE'}</div>
+    </div>
+  </div>
+
+  <div class="mem-section" id="m10">
+    <h3>10. ANÁLISIS SÍSMICO — RANKINE (Mononobe-Okabe)</h3>
+    ${d.Kh>0?`
+    <div class="mem-subsection">
+      <h4>10.1 Ángulo Sísmico</h4>
+      <div class="mem-formula">θ = arctan(Kh / (1 − Kv))</div>
+      <div class="mem-result">θ = ${fmt(R.th_w,5)} rad = ${fmt(R.th_w*180/Math.PI,3)}°</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>10.2 Coeficiente Sísmico</h4>
+      <div class="mem-result">Kae = ${fmt(R.Kae,5)}</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>10.3 Empuje Sísmico</h4>
+      <div class="mem-result">Pae = ${fmt(R.Pae,2)} kg/m
+Ph_sísmico = ${fmt(R.Ph_seismic_total,2)} kg/m
+ΔPh = ${fmt(R.Delta_Ph,2)} kg/m</div>
+    </div>
+    <div class="mem-subsection">
+      <h4>10.4 Verificaciones Sísmicas</h4>
+      <div class="mem-result ${R.FSvs>=1.2?'ok':'fail'}">FS_volteo = ${fmt(R.FSvs,3)} ${R.FSvs>=1.2?'✅ CUMPLE (≥ 1.20)':'❌ NO CUMPLE'}</div>
+      <div class="mem-concept">FS_desliz sísmico usa el mismo empuje pasivo Pp = ${fmt(R.Pp,2)} kg/m calculado en 5.4.</div>
+      <div class="mem-result ${R.FSds>=1.25?'ok':'fail'}">FS_desliz = ${fmt(R.FSds,3)} ${R.FSds>=1.25?'✅ CUMPLE (≥ 1.25)':'❌ NO CUMPLE'}</div>
+      <div class="mem-result ${R.FScs>=2.5?'ok':'fail'}">FS_carga = ${fmt(R.FScs,3)} ${R.FScs>=2.5?'✅ CUMPLE (≥ 2.50)':'❌ NO CUMPLE'}</div>
+    </div>
+    `:'<div class="mem-note">⚠️ Coeficiente sísmico Kh = 0. No se realiza análisis sísmico.</div>'}
+  </div>
+
+  <div class="mem-section" id="m11">
+    <h3>11. ANÁLISIS SÍSMICO — COULOMB</h3>
+    ${d.Kh>0?`
+    <div class="mem-result">Kae = ${fmt(C.Kae,5)}
+Ph_sísmico = ${fmt(C.Ph_seismic_total,2)} kg/m</div>
+    <div class="mem-result ${C.FSvs>=1.2?'ok':'fail'}">FS_volteo = ${fmt(C.FSvs,3)} ${C.FSvs>=1.2?'✅ CUMPLE':'❌ NO CUMPLE'}</div>
+    <div class="mem-concept">FS_desliz sísmico usa el empuje pasivo de Coulomb Pp = ${fmt(C.Pp,2)} kg/m (con fricción δp), calculado en 8.2.</div>
+    <div class="mem-result ${C.FSds>=1.25?'ok':'fail'}">FS_desliz = ${fmt(C.FSds,3)} ${C.FSds>=1.25?'✅ CUMPLE':'❌ NO CUMPLE'}</div>
+    <div class="mem-result ${C.FScs>=2.5?'ok':'fail'}">FS_carga = ${fmt(C.FScs,3)} ${C.FScs>=2.5?'✅ CUMPLE (≥ 2.50)':'❌ NO CUMPLE'}</div>
+    `:'<div class="mem-note">⚠️ Kh = 0. No se realiza análisis sísmico.</div>'}
+  </div>
+
+  <div class="mem-section" id="m12">
+    <h3>12. PRESIONES FACTORADAS (Diseño Estructural)</h3>
+    <div class="mem-concept">Combinaciones: U=1.4D+1.7L (estático), U=1.2D+1.0L+1.0E (sísmico)</div>
+    <div class="mem-result">q_pie_u (Rankine) = ${fmt(R.qpie_u,2)} kg/m²
+q_talón_u (Rankine) = ${fmt(R.qtalon_u,2)} kg/m²
+q_pie_u (Coulomb) = ${fmt(C.qpie_u,2)} kg/m²
+q_talón_u (Coulomb) = ${fmt(C.qtalon_u,2)} kg/m²</div>
+    ${d.Kh>0?`<div class="mem-result">q_pie_u_sismo (Rankine) = ${fmt(R.qpie_u_sismo,2)} kg/m²
+q_pie_u_sismo (Coulomb) = ${fmt(C.qpie_u_sismo,2)} kg/m²</div>`:''}
+  </div>
+
+  <div class="mem-section" id="m13">
+    <h3>13. DISEÑO DE REFUERZO — PANTALLA (Rankine)</h3>
+    <div class="mem-concept">Diseño a flexión y corte de la pantalla (tallo) según Norma E.060 / ACI 318, usando Ka de Rankine. Se analizan 3 secciones críticas: Base (y=0), Media Altura (y=H₂/2) y 2/3 de Altura (y=2H₂/3).</div>
+    ${renderStructMemoryBlock(secR.filter(s=>s.grupo==='Pantalla'),d,'Rankine',R.Ka,R.Kae,R.qtalon_u)}
+  </div>
+
+  <div class="mem-section" id="m14">
+    <h3>14. DISEÑO DE REFUERZO — ZAPATA (Rankine)</h3>
+    <div class="mem-concept">Diseño a flexión y corte de la zapata (talón y puntera) según Norma E.060 / ACI 318, usando las presiones factoradas de Rankine.</div>
+    ${renderStructMemoryBlock(secR.filter(s=>s.grupo!=='Pantalla'),d,'Rankine',R.Ka,R.Kae,R.qtalon_u)}
+  </div>
+
+  <div class="mem-section" id="m15">
+    <h3>15. DISEÑO DE REFUERZO — PANTALLA (Coulomb)</h3>
+    <div class="mem-concept">Diseño a flexión y corte de la pantalla usando Ka de Coulomb (que considera fricción muro-suelo δ=2φ₁/3).</div>
+    ${renderStructMemoryBlock(secC.filter(s=>s.grupo==='Pantalla'),d,'Coulomb',C.Ka,C.Kae,C.qtalon_u)}
+  </div>
+
+  <div class="mem-section" id="m16">
+    <h3>16. DISEÑO DE REFUERZO — ZAPATA (Coulomb)</h3>
+    <div class="mem-concept">Diseño a flexión y corte de la zapata usando las presiones factoradas de Coulomb.</div>
+    ${renderStructMemoryBlock(secC.filter(s=>s.grupo!=='Pantalla'),d,'Coulomb',C.Ka,C.Kae,C.qtalon_u)}
+  </div>
+
+  <div class="mem-section" id="m17">
+    <h3>17. RESUMEN DE CUMPLIMIENTO</h3>
+    <table class="mem-table">
+      <tr><th>Verificación</th><th>Rankine</th><th>Coulomb</th><th>Límite</th><th>R</th><th>C</th></tr>
+      <tr><td>FS Volteo Estático</td><td>${fmt(R.FSv,3)}</td><td>${fmt(C.FSv,3)}</td><td>≥ 1.50</td><td>${R.FSv>=1.5?'✅':'❌'}</td><td>${C.FSv>=1.5?'✅':'❌'}</td></tr>
+      <tr><td>FS Desliz. Estático</td><td>${fmt(R.FSd,3)}</td><td>${fmt(C.FSd,3)}</td><td>≥ 1.50</td><td>${R.FSd>=1.5?'✅':'❌'}</td><td>${C.FSd>=1.5?'✅':'❌'}</td></tr>
+      <tr><td>FS Capacidad Carga</td><td>${fmt(R.FSc,3)}</td><td>${fmt(C.FSc,3)}</td><td>≥ 3.00</td><td>${R.FSc>=3?'✅':'❌'}</td><td>${C.FSc>=3?'✅':'❌'}</td></tr>
+      <tr><td>Excentricidad (m)</td><td>${fmt(R.e,4)}</td><td>${fmt(C.e,4)}</td><td>≤ ${fmt(d.B/6,4)}</td><td>${Math.abs(R.e)<=d.B/6?'✅':'❌'}</td><td>${Math.abs(C.e)<=d.B/6?'✅':'❌'}</td></tr>
+      <tr><td>q_pie (kg/m²)</td><td>${fmt(R.qpie,1)}</td><td>${fmt(C.qpie,1)}</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>qu (kg/m²)</td><td>${fmt(R.qu,1)}</td><td>${fmt(C.qu,1)}</td><td>—</td><td>—</td><td>—</td></tr>
+      ${d.Kh>0?`
+      <tr><td>FS Volteo Sísmico</td><td>${fmt(R.FSvs,3)}</td><td>${fmt(C.FSvs,3)}</td><td>≥ 1.20</td><td>${R.FSvs>=1.2?'✅':'❌'}</td><td>${C.FSvs>=1.2?'✅':'❌'}</td></tr>
+      <tr><td>FS Desliz. Sísmico</td><td>${fmt(R.FSds,3)}</td><td>${fmt(C.FSds,3)}</td><td>≥ 1.25</td><td>${R.FSds>=1.25?'✅':'❌'}</td><td>${C.FSds>=1.25?'✅':'❌'}</td></tr>
+      <tr><td>FS Carga Sísmico</td><td>${fmt(R.FScs,3)}</td><td>${fmt(C.FScs,3)}</td><td>≥ 2.50</td><td>${R.FScs>=2.5?'✅':'❌'}</td><td>${C.FScs>=2.5?'✅':'❌'}</td></tr>
+      `:''}
+    </table>
+    <div class="mem-note" style="margin-top:12px">💡 El método de Coulomb suele producir empujes ligeramente menores que Rankine al considerar la fricción muro-suelo (δ = 2φ₁/3).</div>
+    <div class="mem-note">📝 <strong>Nota Final:</strong> Esta memoria de cálculo ha sido generada automáticamente. Todos los valores han sido verificados contra las fórmulas de la Norma E.060 (Perú) y ACI 318. El ingeniero responsable debe validar los resultados y su interpretación.</div>
+  </div>
+  `;
+  
+  document.getElementById('memoryContent').innerHTML=html;
+}
+
+function exportMemory(){
+  if(!lastAnalysis){alert('No hay análisis para exportar');return;}
+  const memDiv=document.getElementById('memoryContent');
+  const now=new Date();
+  const fecha=now.toLocaleString('es-PE');
+  
+  const htmlExport=`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Memoria de Cálculo - Muro de Contención</title>
+<style>
+body{font-family:'Segoe UI',Arial,sans-serif;max-width:1000px;margin:20px auto;padding:20px;color:#1a1a1a;line-height:1.6;background:#fff}
+h1{color:#0891b2;text-align:center;border-bottom:3px solid #0891b2;padding-bottom:10px}
+h2{color:#0891b2;margin-top:30px;border-bottom:2px solid #7c3aed;padding-bottom:5px}
+h3{color:#7c3aed;margin-top:20px}
+h4{color:#059669;margin-top:12px}
+.mem-formula{background:#f3f4f6;padding:10px;border-radius:6px;font-family:'Consolas',monospace;font-size:12px;margin:8px 0;border-left:3px solid #fbbf24;white-space:pre-wrap}
+.mem-substitution{background:#ecfdf5;padding:10px;border-radius:6px;font-family:'Consolas',monospace;font-size:12px;margin:8px 0;border-left:3px solid #10b981;white-space:pre-wrap}
+.mem-result{background:#f5f3ff;padding:10px;border-radius:6px;font-family:'Consolas',monospace;font-size:12px;margin:8px 0;border-left:3px solid #7c3aed;font-weight:700;white-space:pre-wrap}
+.mem-result.ok{background:#d1fae5;border-left-color:#10b981;color:#065f46}
+.mem-result.fail{background:#fee2e2;border-left-color:#ef4444;color:#991b1b}
+.mem-concept{font-style:italic;color:#6b7280;padding:6px 10px;border-left:2px solid #7c3aed;margin:8px 0;font-size:13px}
+.mem-note{background:#fef3c7;padding:8px 12px;border-radius:4px;border-left:3px solid #f59e0b;margin:8px 0;font-size:12px}
+.mem-caso{background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px;margin:8px 0}
+.mem-caso-title{color:#0891b2;font-weight:700;font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:4px;border-bottom:1px dashed #e5e7eb}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
+th{background:#0891b2;color:white;padding:8px;text-align:left}
+td{padding:6px 8px;border-bottom:1px solid #e5e7eb}
+tr:nth-child(even) td{background:#f9fafb}
+.mem-toc{background:#f0f9ff;padding:15px;border-radius:8px;margin:20px 0;border:1px solid #0891b2}
+.mem-toc ol{padding-left:25px}
+.mem-toc a{color:#0891b2;text-decoration:none}
+@media print{body{margin:0;padding:10mm;font-size:11px}.mem-formula,.mem-substitution,.mem-result{font-size:10px}}
+</style>
+</head>
+<body>
+<div style="text-align:center;background:linear-gradient(135deg,#ecfeff,#f5f3ff);padding:25px;border-radius:10px;margin-bottom:20px;border:2px solid #0891b2">
+<h1 style="border:none;margin:0">📋 MEMORIA DE CÁLCULO</h1>
+<h2 style="border:none;color:#4b5563;margin:5px 0">Análisis Geotécnico y Diseño Estructural de Muro de Contención</h2>
+<p style="color:#6b7280;margin:5px 0"><strong>Métodos:</strong> Rankine & Coulomb | <strong>Norma:</strong> E.060 (Perú) / ACI 318</p>
+<p style="color:#6b7280;margin:5px 0"><strong>Fecha:</strong> ${fecha}</p>
+</div>
+${memDiv.innerHTML}
+<div style="margin-top:40px;padding:20px;background:#f3f4f6;border-radius:8px;text-align:center;font-size:11px;color:#6b7280">
+<p><strong>Documento generado automáticamente</strong> — Software de Análisis de Muros de Contención v3.3</p>
+</div>
+</body>
+</html>`;
+  
+  const blob=new Blob([htmlExport],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`Memoria_Calculo_Muro_${now.toISOString().slice(0,10)}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+function scheduleUpdate(){
+  if(debounceTimer)clearTimeout(debounceTimer);
+  debounceTimer=setTimeout(runAnalysis,250);
+}
+
+document.querySelectorAll('[data-k]').forEach(el=>{
+  el.addEventListener('input',scheduleUpdate);
+  el.addEventListener('change',scheduleUpdate);
 });
 
-renderAll();
+window.addEventListener('resize',()=>{
+  if(debounceTimer)clearTimeout(debounceTimer);
+  debounceTimer=setTimeout(()=>{
+    Object.values(charts).forEach(c=>c&&c.resize&&c.resize());
+    renderSection(getData());
+    if(document.getElementById('fem').classList.contains('active'))renderFEMPanel();
+  },300);
+});
+
+window.addEventListener('load',()=>{setTimeout(runAnalysis,200);});
 </script>
 </body>
 </html>
